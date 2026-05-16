@@ -32,7 +32,8 @@ async function bootstrap() {
   SwaggerModule.setup('api/docs', app, document);
 
   const port = process.env.PORT || 3001;
-  await app.listen(port);
+  const host = process.env.HOST || "localhost";
+  await app.listen(port, host);
   console.log(`VaultScan API running on http://localhost:${port}`);
   console.log(`Swagger docs at http://localhost:${port}/api/docs`);
 }
