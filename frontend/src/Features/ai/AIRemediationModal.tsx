@@ -238,9 +238,9 @@ export function AIRemediationButton({
           description: (
             <div className="flex items-center gap-2 mt-1">
               <span className="truncate">{findingName}</span>
-              <SeverityBadge theme={severity as any} className="px-1.5 py-0 text-[10px] uppercase">
+              {/* <SeverityBadge theme={severity as any} className="px-1.5 py-0 text-[10px] uppercase">
                 {severity}
-              </SeverityBadge>
+              </SeverityBadge> */}
             </div>
           ),
           content: (

@@ -648,7 +648,7 @@ def main():
     findings: List[Dict] = []
 
     # Crawl for more pages to inspect
-    crawled_urls = crawl_same_domain(session, target, timeout=args.timeout)
+    crawled_urls = crawl_same_domain(target, session, timeout=args.timeout)
     if target not in crawled_urls:
         crawled_urls.insert(0, target)
 

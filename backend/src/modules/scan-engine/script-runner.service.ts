@@ -26,16 +26,31 @@ export class ScriptRunnerService {
     scanId?: string,
     timeout: number = 120000,
   ): Promise<ScriptResult[]> {
-    const scriptPromise = this._executeScript(scriptName, args, scanId);
+    // Track the PID of this specific script so we can kill only it on timeout,
+    // rather than calling killScan() which would terminate ALL parallel scripts.
+    let scriptPid: number | undefined;
+    const onPidRegistered = (pid: number) => { scriptPid = pid; };
+
+    const scriptPromise = this._executeScript(scriptName, args, scanId, onPidRegistered);
 
     // Race between the script execution and a timeout
     return Promise.race([
       scriptPromise,
       new Promise<ScriptResult[]>((_, reject) =>
         setTimeout(() => {
-          // Kill the process if it's still running
-          if (scanId) {
-            this.killScan(scanId);
+          // Only kill THIS specific script — not all scripts for the scan
+          if (scriptPid !== undefined) {
+            try {
+              process.kill(scriptPid, 'SIGTERM');
+              if (scanId) {
+                this.activePids.get(scanId)?.delete(scriptPid);
+              }
+              this.logger.log(
+                `Script ${scriptName} timed out — killed PID ${scriptPid}`,
+              );
+            } catch {
+              // Process may have already exited
+            }
           }
           reject(
             new Error(
@@ -51,6 +66,7 @@ export class ScriptRunnerService {
     scriptName: string,
     args: string[],
     scanId?: string,
+    onPidRegistered?: (pid: number) => void,
   ): Promise<ScriptResult[]> {
     return new Promise((resolve, reject) => {
       const pythonPath = process.env['PYTHON_PATH'] || 'python3';
@@ -72,6 +88,11 @@ export class ScriptRunnerService {
           SCAN_MOCK_MODE: process.env['SCAN_MOCK_MODE'] || 'false',
         },
       });
+
+      // Notify caller of this script's PID so targeted timeout kills are possible
+      if (proc.pid !== undefined) {
+        onPidRegistered?.(proc.pid);
+      }
 
       let stdout = '';
       let stderr = '';

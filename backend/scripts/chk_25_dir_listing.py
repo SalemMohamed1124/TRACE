@@ -486,7 +486,7 @@ def main() -> None:
 
     # Step 2: Crawl the site and check any discovered directory-like paths
     try:
-        crawled_urls = crawl_same_domain(session, target, max_pages=30, timeout=timeout)
+        crawled_urls = crawl_same_domain(target, session, max_pages=30, timeout=timeout)
         checked_paths: Set[str] = {p for p, _ in COMMON_DIRS}
 
         for crawled_url in crawled_urls:
