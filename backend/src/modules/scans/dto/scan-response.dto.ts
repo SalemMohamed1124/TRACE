@@ -12,6 +12,7 @@ export interface ScanResponseDto {
   orgId: string;
   initiatedBy: string | null;
   findingsCount: number;
+  progress: number;
   severityCounts: SeverityCountsDto;
   asset?: { id: string; name: string; value: string; type: string };
   findingsSummary?: { critical: number; high: number; medium: number; low: number; total: number };

@@ -8,7 +8,7 @@ import BulkAssetForm from "./BulkAssetForm";
 export function useAssetFormModals() {
   const { view } = useViewModal();
 
-  const openCreateModal = () => {
+  const openCreate = () => {
     view({
       title: "Register New Asset",
       content: <AssetForm />,
@@ -17,7 +17,7 @@ export function useAssetFormModals() {
     });
   };
 
-  const openBulkCreateModal = () => {
+  const openBulkCreate = () => {
     view({
       title: "Bulk Register Assets",
       content: <BulkAssetForm />,
@@ -26,7 +26,7 @@ export function useAssetFormModals() {
     });
   };
 
-  const openEditAsset = (asset: Asset) => {
+  const openEdit = (asset: Asset) => {
     view({
       title: `Edit Asset: ${asset.name}`,
       content: <AssetForm asset={asset} />,
@@ -36,8 +36,9 @@ export function useAssetFormModals() {
   };
 
   return {
-    openCreateModal,
-    openBulkCreateModal,
-    openEditAsset,
+    openCreate,
+    openBulkCreate,
+    openEdit,
   };
 }
+

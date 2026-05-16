@@ -9,7 +9,20 @@ import FindingMobileCard from "./FindingMobileCard";
 import FindingRowActions from "./FindingRowActions";
 import { Checkbox } from "@/components/ui/checkbox";
 
-const severityConfig: Record<Severity, { theme: "critical" | "high" | "medium" | "low" | "CRITICAL" | "HIGH" | "MEDIUM" | "LOW" }> = {
+const severityConfig: Record<
+  Severity,
+  {
+    theme:
+      | "critical"
+      | "high"
+      | "medium"
+      | "low"
+      | "CRITICAL"
+      | "HIGH"
+      | "MEDIUM"
+      | "LOW";
+  }
+> = {
   CRITICAL: { theme: "CRITICAL" },
   HIGH: { theme: "HIGH" },
   MEDIUM: { theme: "MEDIUM" },
@@ -104,18 +117,31 @@ export const FindingColumns: ColumnDef<ScanFinding>[] = [
   {
     id: "asset",
     header: "Asset",
+    accessorFn: (row) => row.scan?.asset?.name || row.location || "N/A",
     cell: ({ row }) => {
       const asset = row.original.scan?.asset;
       return (
         <div className="flex flex-col min-w-0 max-w-[180px]">
-          <span className="font-bold text-[12px] text-foreground truncate" title={asset?.name || "N/A"}>
+          <span
+            className="font-bold text-[12px] text-foreground truncate"
+            title={asset?.name || "N/A"}
+          >
             {asset?.name || "N/A"}
           </span>
-          <span className="text-[10px] font-mono text-muted-foreground opacity-70 truncate" title={row.original.location || asset?.value || ""}>
+          <span
+            className="text-[10px] font-mono text-muted-foreground opacity-70 truncate"
+            title={row.original.location || asset?.value || ""}
+          >
             {row.original.location || asset?.value}
           </span>
         </div>
       );
+    },
+    meta: { filter: true },
+    filterFn: (row, id, filterValues: string[]) => {
+      if (!filterValues?.length) return true;
+      const val = row.getValue(id) as string;
+      return filterValues.includes(val);
     },
   },
   {
@@ -124,5 +150,3 @@ export const FindingColumns: ColumnDef<ScanFinding>[] = [
     cell: ({ row }) => <FindingRowActions finding={row.original} />,
   },
 ];
-
-

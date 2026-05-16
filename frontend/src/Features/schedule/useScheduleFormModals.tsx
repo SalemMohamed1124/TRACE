@@ -9,7 +9,7 @@ import type { ScanSchedule } from "@/types";
 export function useScheduleFormModals() {
   const { view } = useViewModal();
 
-  const openNew = () => {
+  const openCreate = () => {
     view({
       title: "New Automated Schedule",
       content: <ScheduleForm onSuccess={() => {}} />,
@@ -23,15 +23,15 @@ export function useScheduleFormModals() {
     });
   };
 
-  return { openNew, openEdit };
+  return { openCreate, openEdit };
 }
 
 export function ScheduleTableActions() {
-  const { openNew } = useScheduleFormModals();
+  const { openCreate } = useScheduleFormModals();
 
   return (
-    <Button 
-      onClick={openNew} 
+    <Button
+      onClick={openCreate}
       className="bg-primary hover:bg-primary/90 text-white h-9 rounded-xl font-black uppercase text-[10px] tracking-widest shadow-lg shadow-primary/20 gap-2 px-6"
     >
       <Plus className="size-3.5" />
@@ -39,3 +39,4 @@ export function ScheduleTableActions() {
     </Button>
   );
 }
+

@@ -13,7 +13,7 @@ function MobileCardRoot({ children, className }: MobileCardProps) {
     <div
       className={cn(
         "flex flex-col gap-3 p-4 border border-border rounded-lg bg-card text-card-foreground shadow-sm",
-        className
+        className,
       )}
     >
       {children}
@@ -29,7 +29,12 @@ function MobileCardHeader({
   className?: string;
 }) {
   return (
-    <div className={cn("flex justify-between items-center", className)}>
+    <div
+      className={cn(
+        "flex justify-between items-center gap-2 overflow-hidden",
+        className,
+      )}
+    >
       {children}
     </div>
   );
@@ -43,9 +48,7 @@ function MobileCardContent({
   className?: string;
 }) {
   return (
-    <div className={cn("flex flex-col gap-2 mt-1", className)}>
-      {children}
-    </div>
+    <div className={cn("flex flex-col gap-2 mt-1", className)}>{children}</div>
   );
 }
 

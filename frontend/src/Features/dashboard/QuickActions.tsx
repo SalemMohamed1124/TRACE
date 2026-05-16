@@ -16,10 +16,10 @@ type QuickAction = {
 };
 
 export default function QuickActions() {
-  const { openCreateModal: openAddAsset, openBulkCreateModal } =
+  const { openCreate: openAddAsset, openBulkCreate } =
     useAssetFormModals();
-  const { openCreateModal: openStartScan } = useScanFormModals();
-  const { openNew: openNewSchedule } = useScheduleFormModals();
+  const { openCreate: openStartScan } = useScanFormModals();
+  const { openCreate: openNewSchedule } = useScheduleFormModals();
   const { openGenerate: openGenerateReport } = useReportFormModals();
 
   const actions: QuickAction[] = [
@@ -37,7 +37,7 @@ export default function QuickActions() {
       icon: Upload,
       iconColor: "text-indigo-500",
       iconBg: "bg-indigo-500/10 border-indigo-500/20",
-      onClick: openBulkCreateModal,
+      onClick: openBulkCreate,
     },
     {
       label: "Start Scan",

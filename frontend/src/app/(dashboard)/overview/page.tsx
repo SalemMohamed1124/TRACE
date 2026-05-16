@@ -4,10 +4,11 @@ import OverviewStats from "@/Features/dashboard/OverviewStats";
 import { AIInsightsCard } from "@/Features/ai/AIInsightsCard";
 import VulnTrendChart from "@/Features/dashboard/VulnTrendChart";
 import ScanActivityChart from "@/Features/dashboard/ScanActivityChart";
-import TopVulnerabilities from "@/Features/dashboard/TopVulnerabilities";
 import RecentActivity from "@/Features/dashboard/RecentActivity";
 import RecentScansTable from "@/Features/dashboard/RecentScansTable";
 import QuickActions from "@/Features/dashboard/QuickActions";
+import TeamMembersCard from "@/Features/dashboard/TeamMembersCard";
+import ScheduledScansCard from "@/Features/dashboard/ScheduledScansCard";
 
 export default function OverviewPage() {
   return (
@@ -16,7 +17,7 @@ export default function OverviewPage() {
         <div>
           <h1 className="text-2xl font-semibold">Overview</h1>
           <h2 className="text-muted-foreground">
-            Security Posture & Operations Intelligence
+            Security Posture &amp; Operations Intelligence
           </h2>
         </div>
       </div>
@@ -24,17 +25,19 @@ export default function OverviewPage() {
       <OverviewStats />
       <QuickActions />
 
-      <AIInsightsCard />
-
       {/* Charts Row */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <TeamMembersCard />
+        <ScheduledScansCard />
+
         <VulnTrendChart />
         <ScanActivityChart />
       </div>
 
       {/* Intelligence Row */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <TopVulnerabilities />
+        <AIInsightsCard />
+
         <RecentActivity />
       </div>
       <RecentScansTable />

@@ -190,9 +190,9 @@ function SectionGroup({ section }: { section: (typeof NAV_LINKS)[number] }) {
 // ─────────────────────────────────────────────────────────
 function SidebarQuickActions() {
   const { close } = useAppSidebar();
-  const { openCreateModal: openAddAsset, openBulkCreateModal } = useAssetFormModals();
-  const { openCreateModal: openStartScan } = useScanFormModals();
-  const { openNew: openNewSchedule } = useScheduleFormModals();
+  const { openCreate: openAddAsset, openBulkCreate } = useAssetFormModals();
+  const { openCreate: openStartScan } = useScanFormModals();
+  const { openCreate: openNewSchedule } = useScheduleFormModals();
   const { openGenerate: openGenerateReport } = useReportFormModals();
 
   const actions = [
@@ -206,7 +206,7 @@ function SidebarQuickActions() {
   const handleAction = (label: string) => {
     switch (label) {
       case "Add Asset": openAddAsset(); break;
-      case "Bulk Import": openBulkCreateModal(); break;
+      case "Bulk Import": openBulkCreate(); break;
       case "Start Scan": openStartScan(); break;
       case "New Schedule": openNewSchedule(); break;
       case "Generate Report": openGenerateReport(); break;

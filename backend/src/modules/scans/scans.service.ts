@@ -22,6 +22,7 @@ export interface BulkScanResult {
 }
 import { ScriptRunnerService } from '../scan-engine/script-runner.service.js';
 import type { ScanJobData } from '../scan-engine/scan-orchestrator.service.js';
+import { scanProgressStore } from '../scan-engine/scan-progress.store.js';
 import type {
   ScanResponseDto,
   ScanListResponseDto,
@@ -471,6 +472,11 @@ export class ScansService {
     // Load asset relation
     const asset = await this.assetRepo.findOne({ where: { id: scan.assetId } });
 
+    // Read live progress from in-memory store for running scans
+    const liveProgress = scan.status === 'RUNNING'
+      ? (scanProgressStore.get(scan.id)?.progress ?? 0)
+      : scan.status === 'COMPLETED' ? 100 : 0;
+
     return {
       id: scan.id,
       type: scan.type,
@@ -483,6 +489,7 @@ export class ScansService {
       orgId: scan.orgId,
       initiatedBy: scan.initiatedBy,
       findingsCount,
+      progress: liveProgress,
       severityCounts,
       asset: asset ? { id: asset.id, name: asset.name, value: asset.value, type: asset.type } : undefined,
       findingsSummary: {

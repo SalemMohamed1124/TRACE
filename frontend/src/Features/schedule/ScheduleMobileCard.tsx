@@ -30,7 +30,14 @@ export default function ScheduleMobileCard({ schedule }: ScheduleCardProps) {
       <MobileCard.Content>
         <MobileCard.Row>
           <span className="text-muted-foreground">Scan Type:</span>
-          <SeverityBadge theme="outlineSecondary" className="uppercase">
+          <SeverityBadge
+            theme={
+              schedule.scanType === "QUICK"
+                ? "OUTLINE_SECONDARY"
+                : "INFORMATIVE"
+            }
+            className="uppercase"
+          >
             {schedule.scanType}
           </SeverityBadge>
         </MobileCard.Row>
@@ -61,5 +68,3 @@ export default function ScheduleMobileCard({ schedule }: ScheduleCardProps) {
     </MobileCard>
   );
 }
-
-

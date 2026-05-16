@@ -32,7 +32,7 @@ function AssetRowActions({ asset }: AssetRowActionsProps) {
   const { confirm } = useConfirm();
   const { view } = useViewModal();
   const { mutateAsync: deleteAsset } = useDeleteAsset();
-  const { openEditAsset } = useAssetFormModals();
+  const { openEdit } = useAssetFormModals();
 
   function handleShowMore() {
     view({
@@ -42,7 +42,7 @@ function AssetRowActions({ asset }: AssetRowActionsProps) {
   }
 
   function handleEdit() {
-    openEditAsset(asset);
+    openEdit(asset);
   }
 
   const handleDelete = () => {

@@ -5,7 +5,6 @@ import { MobileCard } from "@/components/layout/MobileCard";
 import { SeverityBadge } from "@/components/layout/SeverityBadge";
 import { formatRelativeTime, formatDuration } from "@/lib/utils";
 import { Calendar, Timer } from "lucide-react";
-import { cn } from "@/lib/utils";
 import ScanRowActions from "./ScanRowActions";
 
 import { SCAN_STATUS_CONFIG } from "./scan-status-config";
@@ -32,21 +31,17 @@ export default function ScanMobileCard({ scan }: { scan: Scan }) {
             </span>
           </div>
         </div>
-        <EnhancedStatusBadge status={status} />
       </MobileCard.Header>
 
       <MobileCard.Content>
-        {/* Scan Progress (if running) */}
-        {status === "RUNNING" && (
-          <div className="px-1 mb-2 flex items-center gap-2">
-            <span className="text-[10px] font-black uppercase tracking-widest text-primary/70">
-              Scanning
-            </span>
-            <span className="text-[10px] font-black text-primary tabular-nums">
-              {scan.progress || 0}%
-            </span>
-          </div>
-        )}
+        <MobileCard.Row>
+          <span className="text-xs text-muted-foreground font-medium shrink-0">
+            Scan Status:
+          </span>
+          <SeverityBadge theme={config.theme}>
+            {scan.status === "RUNNING" ? `${scan.progress}%` : scan.status}
+          </SeverityBadge>
+        </MobileCard.Row>
 
         <MobileCard.Row>
           <span className="text-xs text-muted-foreground font-medium shrink-0">
@@ -84,11 +79,11 @@ export default function ScanMobileCard({ scan }: { scan: Scan }) {
         </MobileCard.Row>
 
         {summary && summary.total > 0 && (
-          <MobileCard.Row>
-            <span className="text-xs text-muted-foreground font-medium shrink-0">
+          <MobileCard.Row className="items-stretch">
+            <span className="text-xs text-muted-foreground font-medium shrink-0 ">
               Findings:
             </span>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap justify-end  gap-2">
               {[
                 { count: summary.critical, theme: "CRITICAL" },
                 { count: summary.high, theme: "HIGH" },
@@ -97,8 +92,14 @@ export default function ScanMobileCard({ scan }: { scan: Scan }) {
               ].map(
                 (s, idx) =>
                   s.count > 0 && (
-                    <SeverityBadge key={idx} theme={s.theme as any} className="gap-1 px-1.5 py-0 font-bold shrink-0">
-                      <span className="text-[10px] uppercase opacity-70 tracking-wider">{s.theme}</span>
+                    <SeverityBadge
+                      key={idx}
+                      theme={s.theme as any}
+                      className="gap-1 "
+                    >
+                      <span className="text-[10px] uppercase  tracking-wider">
+                        {s.theme}
+                      </span>
                       <span className="text-xs">{s.count}</span>
                     </SeverityBadge>
                   ),
@@ -114,19 +115,3 @@ export default function ScanMobileCard({ scan }: { scan: Scan }) {
     </MobileCard>
   );
 }
-
-function EnhancedStatusBadge({ status }: { status: ScanStatus }) {
-  const config = SCAN_STATUS_CONFIG[status];
-  const Icon = config.icon;
-  return (
-    <SeverityBadge
-      theme={config.theme}
-      className="gap-1.5 font-black uppercase text-[9px] tracking-tight py-1 px-2.5 shrink-0"
-    >
-      <Icon className={cn("size-3", status === "RUNNING" && "animate-spin")} />
-      {config.label}
-    </SeverityBadge>
-  );
-}
-
-

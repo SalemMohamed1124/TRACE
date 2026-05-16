@@ -22,13 +22,13 @@ export default function AssetsTable() {
 }
 
 export function AssetTableActions() {
-  const { openCreateModal, openBulkCreateModal } = useAssetFormModals();
+  const { openCreate, openBulkCreate } = useAssetFormModals();
 
   return (
     <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
       <Button
         variant="outline"
-        onClick={openBulkCreateModal}
+        onClick={openBulkCreate}
         className="h-9 gap-2 w-full sm:w-auto order-2 sm:order-1"
       >
         <Upload className="size-4" />
@@ -36,7 +36,7 @@ export function AssetTableActions() {
       </Button>
       <Button
         variant="primary"
-        onClick={openCreateModal}
+        onClick={openCreate}
         className="h-9 gap-2 w-full sm:w-auto order-1 sm:order-2"
       >
         <Plus className="size-4" />

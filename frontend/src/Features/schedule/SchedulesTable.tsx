@@ -9,7 +9,7 @@ import { Plus } from "lucide-react";
 
 export default function SchedulesTable() {
   const { isPending, items, error, isError } = useSchedules();
-  const { openNew } = useScheduleFormModals();
+  const { openCreate } = useScheduleFormModals();
 
   return (
     <DataTable
@@ -19,7 +19,7 @@ export default function SchedulesTable() {
       tableName="SchedulesTable"
       error={isError ? (error as Error) : undefined}
       extraActions={
-        <Button onClick={() => openNew()} variant="primary">
+        <Button onClick={() => openCreate()} variant="primary">
           <Plus className="size-4 mr-2" />
           Add Schedule
         </Button>

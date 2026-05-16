@@ -4,7 +4,7 @@ import { useOrg } from "@/hooks/useOrg";
 import { useOrgMembers } from "../useSettings";
 import { DataTable } from "@/components/dataTable/DataTable";
 import { MemberColumns } from "./MemberColumns";
-import InviteMemberModal from "./InviteMemberModal";
+import { MemberTableActions } from "./useMemberFormModals";
 
 export default function MembersTab() {
   const { activeOrgId } = useOrg();
@@ -35,8 +35,9 @@ export default function MembersTab() {
           filter: true,
           viewOptions: false,
         }}
-        extraActions={<InviteMemberModal />}
+        extraActions={<MemberTableActions />}
       />
     </div>
   );
 }
+

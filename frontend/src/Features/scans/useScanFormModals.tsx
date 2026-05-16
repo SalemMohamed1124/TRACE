@@ -8,7 +8,7 @@ import ScanForm from "./ScanForm";
 export function useScanFormModals() {
   const { view } = useViewModal();
 
-  const openCreateModal = () => {
+  const openCreate = () => {
     view({
       title: "Initiate Security Scan",
       content: <ScanForm />,
@@ -18,22 +18,24 @@ export function useScanFormModals() {
   };
 
   return {
-    openCreateModal,
+    openCreate,
   };
 }
 
 export function ScanTableActions() {
-  const { openCreateModal } = useScanFormModals();
+  const { openCreate } = useScanFormModals();
 
   return (
     <div className="flex items-center gap-2 w-full sm:w-auto">
-      <Button 
-        variant="primary" 
-        onClick={openCreateModal} 
- className="h-9 gap-2 w-full sm:w-auto order-1 sm:order-2"      >
+      <Button
+        variant="primary"
+        onClick={openCreate}
+        className="h-9 gap-2 w-full sm:w-auto order-1 sm:order-2"
+      >
         <Play className="size-3.5 fill-current" />
         Start New Scan
       </Button>
     </div>
   );
 }
+
