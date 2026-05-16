@@ -151,7 +151,7 @@ export default function ScheduledScansCard() {
       </div>
 
       {/* Footer link */}
-      <div>
+      <div className="mt-auto">
         <Link
           href="/schedules"
           className="flex items-center pt-3 gap-2 border-t border-border/40 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors group"

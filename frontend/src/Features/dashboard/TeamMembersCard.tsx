@@ -33,7 +33,7 @@ function MemberRow({ member }: { member: OrgMember }) {
   const initial = member.user.name?.[0]?.toUpperCase();
 
   return (
-    <div className="flex items-center gap-3 py-2.5 border-b border-border/40 last:border-0">
+    <div className="flex items-center gap-3 py-2.5 border-b border-border/40 last:border-0 ">
       {/* Avatar */}
       <div className="size-8 rounded-sm bg-primary/10 flex items-center justify-center font-bold text-sm shrink-0 text-primary">
         {initial ?? <User className="size-4 text-muted-foreground" />}
@@ -67,7 +67,7 @@ export default function TeamMembersCard() {
   const { openCreate } = useMemberFormModals();
 
   return (
-    <div className="glass-card p-5 flex flex-col gap-4 shadow-none justify-between">
+    <div className="glass-card p-5 flex flex-col gap-4 shadow-none">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -121,7 +121,7 @@ export default function TeamMembersCard() {
       </div>
 
       {/* Footer link */}
-      <div>
+      <div className="mt-auto">
         <Link
           href="/settings"
           className="flex items-center  pt-3 gap-2 border-t border-border/40 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors group"
