@@ -101,13 +101,13 @@ function FormatSelectionField() {
 
 function FormFooter({ isLoading, reset, close }: { isLoading: boolean, reset: () => void, close: () => void }) {
   return (
-    <div className="flex justify-end gap-3 px-5 py-4 border-t bg-background/50 backdrop-blur-sm">
+    <div className="flex flex-col sm:flex-row justify-end gap-2 px-5 py-4 border-t bg-background/50 backdrop-blur-sm">
       <div className="flex gap-2 w-full sm:w-auto">
-        <Button variant="outline" type="button" onClick={close} disabled={isLoading} className="flex-1 sm:w-20 h-9 text-xs font-semibold">Cancel</Button>
-        <Button variant="outline" type="button" onClick={reset} disabled={isLoading} className="flex-1 sm:w-20 h-9 text-xs font-semibold">Reset</Button>
+        <Button variant="outline" type="button" onClick={close} disabled={isLoading} className="flex-1 sm:flex-none h-9 px-4 text-xs">Cancel</Button>
+        <Button variant="outline" type="button" onClick={reset} disabled={isLoading} className="flex-1 sm:flex-none h-9 px-4 text-xs">Reset</Button>
       </div>
       <Button type="submit" disabled={isLoading} variant="primary" className="w-full sm:w-auto h-9 px-6 text-xs font-semibold gap-2">
-        {isLoading ? <Loader2 className="size-4 animate-spin" /> : <Plus className="size-4" />}
+        {isLoading ? <Loader2 className="size-4 animate-spin" /> : null}
         Generate Report
       </Button>
     </div>

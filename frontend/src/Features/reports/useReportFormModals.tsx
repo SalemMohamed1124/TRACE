@@ -10,7 +10,7 @@ export function useReportFormModals() {
 
   const openGenerate = () => {
     view({
-      title: "Generate Investigation Report",
+      title: "Generate Report",
       content: <ReportForm onSuccess={() => {}} />,
       noPadding: true,
       defaultScroll: false,

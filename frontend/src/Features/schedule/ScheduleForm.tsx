@@ -24,10 +24,10 @@ export default function ScheduleForm({ schedule, onSuccess }: { schedule?: ScanS
 function ScheduleFormWrapper() {
   const { handleSubmit, onSubmit, isLoading, reset, editMode, close } = useScheduleForm();
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="grid grid-rows-[1fr_auto] min-h-0 max-h-[82vh] sm:max-h-[75vh]">
-      <ScrollArea className="min-h-0 py-6">
-        <div className="flex flex-col gap-6 px-6 pb-6">
-          <FieldGroup className="gap-6">
+    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col max-h-[min(82vh,600px)]">
+      <ScrollArea className="flex-1 min-h-0">
+        <div className="flex flex-col gap-5 px-5 py-5">
+          <FieldGroup className="gap-5">
             <AssetSelectionField />
             <ScanTypeField />
             <FrequencyField />
@@ -36,7 +36,7 @@ function ScheduleFormWrapper() {
         </div>
       </ScrollArea>
 
-      <div className="flex flex-col sm:flex-row justify-end gap-2 px-6 py-4 border-t border-border bg-background">
+      <div className="flex flex-col sm:flex-row justify-end gap-2 px-5 py-4 border-t bg-background/50 backdrop-blur-sm">
         <div className="flex gap-2 w-full sm:w-auto">
           <Button variant="outline" type="button" onClick={close} disabled={isLoading} className="flex-1 sm:flex-none h-9 px-4 text-xs">
             Cancel
@@ -49,7 +49,7 @@ function ScheduleFormWrapper() {
           type="submit" 
           disabled={isLoading} 
           variant="primary" 
-          className="w-full sm:w-auto h-9 px-6 text-xs font-semibold gap-2"
+          className="w-full sm:w-auto h-9 px-6 text-xs font-semibold"
         >
           {isLoading ? <Spinner /> : editMode ? "Update Schedule" : "Deploy Schedule"}
         </Button>

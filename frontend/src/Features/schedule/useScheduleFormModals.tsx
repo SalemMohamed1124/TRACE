@@ -13,6 +13,8 @@ export function useScheduleFormModals() {
     view({
       title: "New Automated Schedule",
       content: <ScheduleForm onSuccess={() => {}} />,
+      noPadding: true,
+      defaultScroll: false,
     });
   };
 
@@ -20,6 +22,8 @@ export function useScheduleFormModals() {
     view({
       title: "Modify Schedule",
       content: <ScheduleForm schedule={schedule} onSuccess={() => {}} />,
+      noPadding: true,
+      defaultScroll: false,
     });
   };
 
