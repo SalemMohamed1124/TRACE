@@ -76,7 +76,7 @@ export default function TeamMembersCard() {
           </div>
           <div className="flex flex-col">
             <h3 className="text-sm font-black uppercase tracking-tight">
-              Team Members
+              Team
             </h3>
             {!isPending && (
               <span className="text-[10px] text-muted-foreground font-medium">

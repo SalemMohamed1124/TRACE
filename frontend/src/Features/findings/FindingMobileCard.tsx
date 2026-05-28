@@ -9,13 +9,15 @@ import {
   Info,
   Shield,
   Bug,
-  MapPin,
   type LucideIcon,
+  Badge,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 import FindingRowActions from "./FindingRowActions";
 
-const severityConfig: Record<Severity, { icon: LucideIcon; theme: "critical" | "high" | "medium" | "success" }> = {
+const severityConfig: Record<
+  Severity,
+  { icon: LucideIcon; theme: "critical" | "high" | "medium" | "success" }
+> = {
   CRITICAL: { icon: AlertOctagon, theme: "critical" },
   HIGH: { icon: AlertTriangle, theme: "high" },
   MEDIUM: { icon: Info, theme: "medium" },
@@ -35,12 +37,13 @@ export default function FindingMobileCard({
   return (
     <MobileCard className="w-full max-w-full">
       <MobileCard.Header>
-        <div className="flex items-center gap-2">
+        {/* flex-1 min-w-0 lets the title shrink; shrink-0 keeps the badge intact */}
+        <div className="flex items-center gap-2 flex-1 min-w-0">
           <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-muted/30 border border-border/30 text-muted-foreground">
             <Bug className="size-3.5 text-red-500" />
           </div>
           <h4
-            className="font-bold text-lg tracking-tight leading-none truncate max-w-[200px]"
+            className="font-bold text-base tracking-tight leading-none flex-1 min-w-0 truncate"
             title={finding.vulnerability?.name}
           >
             {finding.vulnerability?.name || "Unknown"}
@@ -48,7 +51,7 @@ export default function FindingMobileCard({
         </div>
         <SeverityBadge
           theme={config.theme}
-          className="shrink-0 gap-1 font-black uppercase text-[9px] px-2 h-5"
+          className="shrink-0 gap-1 font-black uppercase text-[9px] px-2 h-5 ml-1"
         >
           <Icon className="size-2.5" />
           {severity}
@@ -60,16 +63,17 @@ export default function FindingMobileCard({
           <span className="text-xs text-muted-foreground font-medium shrink-0">
             Category:
           </span>
-          <span className="truncate max-w-[200px] px-2 py-0.5 bg-muted/40 border border-border/50 text-[10px] font-mono text-muted-foreground rounded-sm">
+          {/* flex-1 min-w-0 is the key — gives the span a bounded width so truncate works */}
+          <SeverityBadge theme={"OUTLINE_SECONDARY"}>
             {finding.vulnerability?.category || "UNCATEGORIZED"}
-          </span>
+          </SeverityBadge>
         </MobileCard.Row>
 
         <MobileCard.Row>
           <span className="text-xs text-muted-foreground font-medium shrink-0">
             Target:
           </span>
-          <span className="text-xs font-bold truncate">
+          <span className="flex-1 min-w-0 truncate text-right text-xs font-bold">
             {asset?.name || "N/A"}
           </span>
         </MobileCard.Row>
@@ -78,7 +82,7 @@ export default function FindingMobileCard({
           <span className="text-xs text-muted-foreground font-medium shrink-0">
             Location:
           </span>
-          <span className="text-[11px] font-mono text-muted-foreground truncate max-w-[150px]">
+          <span className="flex-1 min-w-0 truncate text-right text-[11px] font-mono text-muted-foreground">
             {finding.location}
           </span>
         </MobileCard.Row>
@@ -90,5 +94,3 @@ export default function FindingMobileCard({
     </MobileCard>
   );
 }
-
-

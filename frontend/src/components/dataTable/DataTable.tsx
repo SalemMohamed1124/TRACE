@@ -74,7 +74,7 @@ export function DataTable<TData, TValue>({
       />
 
       <div className="rounded-md">
-        <Table className={cn("w-full border-separate", cardsLayout ? "border-spacing-y-3" : "border-spacing-0")}>
+        <Table className={cn("w-full border-separate", useMobileUI && "table-fixed", cardsLayout ? "border-spacing-y-3" : "border-spacing-0")}>
           {!useMobileUI && (
             <TableHeader className="sticky top-15 z-10 w-full bg-background">
               {table.getHeaderGroups().map((headerGroup) => (

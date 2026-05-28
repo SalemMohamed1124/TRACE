@@ -31,7 +31,7 @@ function MobileCardHeader({
   return (
     <div
       className={cn(
-        "flex justify-between items-center gap-2 overflow-hidden",
+        "flex justify-between items-center gap-2 min-w-0",
         className,
       )}
     >
@@ -60,7 +60,7 @@ function MobileCardRow({
   className?: string;
 }) {
   return (
-    <div className={cn("flex justify-between items-center", className)}>
+    <div className={cn("flex justify-between items-center gap-2 min-w-0", className)}>
       {children}
     </div>
   );

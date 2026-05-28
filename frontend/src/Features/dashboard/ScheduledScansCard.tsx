@@ -98,14 +98,8 @@ export default function ScheduledScansCard() {
           </div>
           <div className="flex flex-col">
             <h3 className="text-sm font-black uppercase tracking-tight">
-              Scheduled Scans
+              Schedules
             </h3>
-            {!isPending && (
-              <span className="text-[10px] text-muted-foreground font-medium">
-                {schedules.length}{" "}
-                {schedules.length === 1 ? "schedule" : "schedules"} configured
-              </span>
-            )}
           </div>
         </div>
 
