@@ -229,13 +229,19 @@ export class ScansService {
       );
     }
 
-    // Kill any running Python scripts for this scan
+    // Abort the running scan: aborts in-flight scripts and signals the worker
+    // to stop. Synchronous (in-memory), so no await needed.
     if (scan.status === ScanStatus.RUNNING) {
-      await this.scriptRunner.killScan(scanId);
+      this.scriptRunner.killScan(scanId);
     }
 
-    // Remove all matching Bull jobs from the queue so the worker slot is freed.
-    // Without this, cancelled jobs remain active in the queue and block new scans.
+    // Clean up matching Bull jobs so the worker slot is freed. State matters:
+    // waiting/delayed jobs are unlocked and can be removed outright, but an
+    // ACTIVE job is locked by its worker — calling remove() on it throws
+    // "Could not remove job <id>". We deliberately leave active jobs alone:
+    // killScan() above aborts the scan, so the worker unwinds, the orchestrator
+    // returns cleanly (no rethrow → Bull marks the job completed, not failed,
+    // so there's no retry), and the lock releases on its own within ~a phase.
     try {
       const [waiting, active, delayed] = await Promise.all([
         this.scanQueue.getWaiting(),
@@ -243,15 +249,22 @@ export class ScansService {
         this.scanQueue.getDelayed(),
       ]);
 
-      const matchingJobs = [...waiting, ...active, ...delayed].filter(
-        (job) => (job.data as ScanJobData).scanId === scanId,
-      );
+      const matches = (job: Bull.Job) =>
+        (job.data as ScanJobData).scanId === scanId;
 
-      await Promise.all(matchingJobs.map((job) => job.remove()));
+      // Unlocked jobs that haven't started — safe to remove outright.
+      const removable = [...waiting, ...delayed].filter(matches);
+      await Promise.all(removable.map((job) => job.remove()));
 
-      if (matchingJobs.length > 0) {
+      const activeCount = active.filter(matches).length;
+      if (removable.length > 0) {
         this.logger.log(
-          `Removed ${matchingJobs.length} Bull job(s) for cancelled scan ${scanId}`,
+          `Removed ${removable.length} pending Bull job(s) for cancelled scan ${scanId}`,
+        );
+      }
+      if (activeCount > 0) {
+        this.logger.log(
+          `Left ${activeCount} active Bull job(s) for scan ${scanId} to the aborted worker to finish`,
         );
       }
     } catch (error) {

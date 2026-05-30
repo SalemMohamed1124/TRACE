@@ -6,7 +6,10 @@ import { Scan } from '../scans/scan.entity.js';
 import { ScanFinding } from '../findings/scan-finding.entity.js';
 import { Vulnerability } from '../findings/vulnerability.entity.js';
 import { ScanStatus, AssetType } from '../../common/enums/index.js';
-import { ScriptRunnerService } from './script-runner.service.js';
+import {
+  ScriptRunnerService,
+  ScanCancelledError,
+} from './script-runner.service.js';
 import { AggregatorService } from './aggregator.service.js';
 import type { AggregatedFinding } from './aggregator.service.js';
 import { scanProgressStore } from './scan-progress.store.js';
@@ -66,6 +69,7 @@ export class ScanOrchestratorService {
     const authArgs = this.getAuthArgs(jobData);
     const isWebAsset =
       assetType === AssetType.DOMAIN || assetType === AssetType.URL;
+    const signal = this.scriptRunner.getSignal(scanId);
 
     try {
       await this.updateScanStatus(scanId, ScanStatus.RUNNING);
@@ -123,6 +127,7 @@ export class ScanOrchestratorService {
       );
 
       // ── Phase 1: Infrastructure (10→30%) — all parallel ──
+      this.throwIfCancelled(signal, scanId);
       this.emitProgress(
         scanId,
         12,
@@ -169,6 +174,7 @@ export class ScanOrchestratorService {
       );
 
       // ── Phase 2: Vulnerability Testing (30→70%) — all parallel ──
+      this.throwIfCancelled(signal, scanId);
       if (isWebAsset) {
         this.emitProgress(
           scanId,
@@ -213,6 +219,7 @@ export class ScanOrchestratorService {
       );
 
       // ── Phase 3: Quick security checks (70→90%) ──
+      this.throwIfCancelled(signal, scanId);
       if (isWebAsset) {
         this.emitProgress(
           scanId,
@@ -281,12 +288,21 @@ export class ScanOrchestratorService {
         `Quick scan ${scanId} completed with ${aggregated.length} findings`,
       );
     } catch (error) {
+      if (error instanceof ScanCancelledError) {
+        // cancelScan already set the DB status to CANCELLED — don't overwrite
+        // it with FAILED, and don't rethrow (so the Bull worker exits cleanly
+        // without triggering a retry).
+        this.logger.log(`Quick scan ${scanId} cancelled — stopping`);
+        return;
+      }
       this.logger.error(
         `Quick scan ${scanId} failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
       await this.updateScanStatus(scanId, ScanStatus.FAILED);
       this.emitProgress(scanId, -1, 'Scan failed');
       throw error;
+    } finally {
+      this.scriptRunner.clearSignal(scanId);
     }
   }
 
@@ -295,6 +311,7 @@ export class ScanOrchestratorService {
     const authArgs = this.getAuthArgs(jobData);
     const isWebAsset =
       assetType === AssetType.DOMAIN || assetType === AssetType.URL;
+    const signal = this.scriptRunner.getSignal(scanId);
 
     try {
       // Step 1: Update status to RUNNING
@@ -360,6 +377,7 @@ export class ScanOrchestratorService {
       // ---------------------------------------------------------------
       // Phase 1: Network Discovery (3% → 12%)
       // ---------------------------------------------------------------
+      this.throwIfCancelled(signal, scanId);
       this.emitProgress(
         scanId,
         3,
@@ -396,6 +414,7 @@ export class ScanOrchestratorService {
       const portsArg =
         openPorts.length > 0 ? openPorts.join(',') : '22,80,443,3306';
 
+      this.throwIfCancelled(signal, scanId);
       const fingerprintPhase = await Promise.allSettled([
         this.scriptRunner.runScript(
           'service_fingerprint.py',
@@ -418,6 +437,7 @@ export class ScanOrchestratorService {
       // ---------------------------------------------------------------
       // Phase 1.5: DNS Reconnaissance (12% → 25%)
       // ---------------------------------------------------------------
+      this.throwIfCancelled(signal, scanId);
       if (assetType === AssetType.DOMAIN || assetType === AssetType.URL) {
         this.emitProgress(
           scanId,
@@ -455,6 +475,7 @@ export class ScanOrchestratorService {
       // ---------------------------------------------------------------
       // Phase 2a: Injection & Input Validation (25% → 45%)
       // ---------------------------------------------------------------
+      this.throwIfCancelled(signal, scanId);
       if (isWebAsset) {
         this.emitProgress(
           scanId,
@@ -510,6 +531,7 @@ export class ScanOrchestratorService {
       // ---------------------------------------------------------------
       // Phase 2b: Access Control & Logic (45% → 60%)
       // ---------------------------------------------------------------
+      this.throwIfCancelled(signal, scanId);
       if (isWebAsset) {
         this.emitProgress(
           scanId,
@@ -565,6 +587,7 @@ export class ScanOrchestratorService {
       // ---------------------------------------------------------------
       // Phase 2c: Protocol & Header attacks (60% → 70%)
       // ---------------------------------------------------------------
+      this.throwIfCancelled(signal, scanId);
       if (isWebAsset) {
         this.emitProgress(
           scanId,
@@ -746,6 +769,7 @@ export class ScanOrchestratorService {
       // ---------------------------------------------------------------
       // Phase 3: Configuration & Data Exposure (70% → 90%)
       // ---------------------------------------------------------------
+      this.throwIfCancelled(signal, scanId);
       this.emitProgress(
         scanId,
         72,
@@ -818,12 +842,33 @@ export class ScanOrchestratorService {
         `Deep scan ${scanId} completed with ${aggregated.length} findings`,
       );
     } catch (error) {
+      if (error instanceof ScanCancelledError) {
+        // cancelScan already set the DB status to CANCELLED — don't overwrite
+        // it with FAILED, and don't rethrow (so the Bull worker exits cleanly
+        // without triggering a retry).
+        this.logger.log(`Deep scan ${scanId} cancelled — stopping`);
+        return;
+      }
       this.logger.error(
         `Deep scan ${scanId} failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
       await this.updateScanStatus(scanId, ScanStatus.FAILED);
       this.emitProgress(scanId, -1, 'Scan failed');
       throw error;
+    } finally {
+      this.scriptRunner.clearSignal(scanId);
+    }
+  }
+
+  /**
+   * Bails out of a scan between phases if it was cancelled. The per-phase
+   * Promise.allSettled blocks swallow the ScanCancelledError that aborted
+   * scripts throw, so we re-check the signal here to stop the next phase from
+   * spawning and let the Bull worker unwind (releasing its job lock).
+   */
+  private throwIfCancelled(signal: AbortSignal, scanId: string): void {
+    if (signal.aborted) {
+      throw new ScanCancelledError(scanId);
     }
   }
 

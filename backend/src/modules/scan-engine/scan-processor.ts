@@ -29,14 +29,16 @@ export class ScanProcessor {
 
     try {
       const scan = await this.scanRepo.findOne({ where: { id: scanId } });
-      
+
       if (!scan) {
         this.logger.warn(`Scan ${scanId} was deleted. Skipping job.`);
         return;
       }
 
       if (scan.status !== ScanStatus.PENDING) {
-        this.logger.warn(`Scan ${scanId} is not in PENDING state (status: ${scan.status}). Skipping job.`);
+        this.logger.warn(
+          `Scan ${scanId} is not in PENDING state (status: ${scan.status}). Skipping job.`,
+        );
         return;
       }
 
