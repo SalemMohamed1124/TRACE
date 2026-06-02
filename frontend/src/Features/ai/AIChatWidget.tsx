@@ -29,6 +29,40 @@ export function AIChatWidget({ scanId }: AIChatWidgetProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
+  const [isVisible, setIsVisible] = useState(true);
+
+  useEffect(() => {
+    let lastScrollY = 0;
+    const handleScroll = (e: Event) => {
+      const target = e.target as HTMLElement;
+      if (!target) return;
+
+      // Support both window scrolling and overflow element scrolling
+      const currentScrollY =
+        target.scrollTop !== undefined ? target.scrollTop : window.scrollY;
+
+      // Avoid triggering on tiny micro-scrolls
+      if (Math.abs(currentScrollY - lastScrollY) < 15) return;
+
+      if (currentScrollY > lastScrollY && currentScrollY > 50) {
+        // Scrolling down -> hide
+        setIsVisible(false);
+      } else {
+        // Scrolling up -> show
+        setIsVisible(true);
+      }
+      lastScrollY = currentScrollY;
+    };
+
+    // Use capture phase to catch scroll events from layout/main overflow containers
+    document.addEventListener("scroll", handleScroll, {
+      capture: true,
+      passive: true,
+    });
+    return () =>
+      document.removeEventListener("scroll", handleScroll, { capture: true });
+  }, []);
+
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, []);
@@ -69,7 +103,7 @@ export function AIChatWidget({ scanId }: AIChatWidgetProps) {
             },
           ]);
         },
-      }
+      },
     );
   };
 
@@ -103,10 +137,15 @@ export function AIChatWidget({ scanId }: AIChatWidgetProps) {
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground "
+        className={cn(
+          "fixed z-50 flex h-12 w-12 items-center justify-center rounded-full bg-primary/80 backdrop-blur-md border border-primary/20 text-primary-foreground shadow-lg shadow-primary/30 transition-all duration-300 ease-in-out hover:scale-105 active:scale-95",
+          isVisible
+            ? "bottom-6 right-6 opacity-75 md:opacity-90 hover:opacity-100 pointer-events-auto scale-100"
+            : "bottom-6 right-6 translate-y-20 opacity-0 pointer-events-none scale-75",
+        )}
       >
-        <MessageSquare className="h-6 w-6" />
-        <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold">
+        <MessageSquare className="h-5.5 w-5.5" />
+        <span className="absolute -top-0.5 -right-0.5 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[9px] font-extrabold shadow-sm border border-background">
           AI
         </span>
       </button>
