@@ -60,7 +60,7 @@ export default function AppSidebar() {
     <>
       {/* ── Mini Sidebar for Desktop ── */}
       {!isMobile && (
-        <aside className="w-[72px] shrink-0 flex flex-col items-center bg-background z-10 py-3 gap-1 overflow-y-auto no-scrollbar">
+        <aside className="hidden md:flex w-[72px] shrink-0 flex-col items-center bg-background z-10 py-3 gap-1 overflow-y-auto no-scrollbar">
           {NAV_LINKS.flatMap((s) => s.items).map((item) => {
             const isActive =
               pathname === item.link ||
@@ -110,7 +110,7 @@ export default function AppSidebar() {
           // Positioning — floats over content, starts below the header (top-14)
           "fixed top-14 left-0 bottom-0 z-50 w-64",
           // Appearance — same bg as app, glass-like with shadow
-          "flex flex-col bg-background/98 backdrop-blur-sm",
+          "flex flex-col bg-background/98",
           "shadow-2xl shadow-black/30",
           "will-change-transform", // Hardware acceleration for sliding
           // Slide animation
@@ -119,7 +119,10 @@ export default function AppSidebar() {
         ].join(" ")}
       >
         {/* Nav items (Using native scroll for better mobile performance) */}
-        <div className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar overscroll-contain">
+        <div
+          style={{ WebkitOverflowScrolling: "touch" }}
+          className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar overscroll-contain"
+        >
           <nav className="py-3 px-3">
             {NAV_LINKS.map((section, si) => (
               <SectionGroup key={si} section={section} />

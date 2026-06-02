@@ -25,22 +25,22 @@ export function AssetTableActions() {
   const { openCreate, openBulkCreate } = useAssetFormModals();
 
   return (
-    <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
-      <Button
-        variant="outline"
-        onClick={openBulkCreate}
-        className="h-9 gap-2 w-full sm:w-auto order-2 sm:order-1"
-      >
-        <Upload className="size-4" />
-        Bulk
-      </Button>
+    <div className="grid grid-cols-2 gap-2 w-full">
       <Button
         variant="primary"
         onClick={openCreate}
-        className="h-9 gap-2 w-full sm:w-auto order-1 sm:order-2"
+        className="h-9 gap-2 order-2 "
       >
         <Plus className="size-4" />
         Add Asset
+      </Button>
+      <Button
+        variant="outline"
+        onClick={openBulkCreate}
+        className="h-9 gap-2   sm:order-1"
+      >
+        <Upload className="size-4" />
+        Bulk
       </Button>
     </div>
   );

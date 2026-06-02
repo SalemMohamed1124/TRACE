@@ -32,10 +32,9 @@ export function ScanTableActions() {
         onClick={openCreate}
         className="h-9 gap-2 w-full sm:w-auto order-1 sm:order-2"
       >
-        <Play className="size-3.5 fill-current" />
+        <Play className="size-3.5 " />
         Start New Scan
       </Button>
     </div>
   );
 }
-

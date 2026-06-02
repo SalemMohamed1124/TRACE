@@ -8,8 +8,18 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { Dialog, DialogTrigger, DialogFooter, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { SortFilterModalProvider, useSortFilter } from "@/Contexts/SortFilterModalContext";
+import {
+  Dialog,
+  DialogTrigger,
+  DialogFooter,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  SortFilterModalProvider,
+  useSortFilter,
+} from "@/Contexts/SortFilterModalContext";
 
 // --- Main Component ---
 
@@ -27,9 +37,13 @@ export default function DataTableSortFilterModal<TData>({
   const [open, setOpen] = React.useState(false);
 
   return (
-      <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="h-9 px-3 transition-none">
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-9 px-3 transition-none"
+        >
           <Funnel className="mr-2 size-4 opacity-50" /> Sort & Filter
         </Button>
       </DialogTrigger>
@@ -43,7 +57,9 @@ export default function DataTableSortFilterModal<TData>({
           onClose={() => setOpen(false)}
         >
           <DialogHeader className="px-4 py-3.5">
-            <DialogTitle className="text-xl font-bold flex items-center gap-2">Filter & Sort Options</DialogTitle>
+            <DialogTitle className="text-xl font-bold flex items-center gap-2">
+              Filter & Sort Options
+            </DialogTitle>
           </DialogHeader>
 
           <ScrollArea className="px-6 max-h-[45vh]">
@@ -64,20 +80,29 @@ export default function DataTableSortFilterModal<TData>({
 // --- Sub-components ---
 
 function SortSection() {
-  const { sortColumns, sortColumn, setSortColumn, sortOrder, setSortOrder } = useSortFilter();
+  const { sortColumns, sortColumn, setSortColumn, sortOrder, setSortOrder } =
+    useSortFilter();
   if (!sortColumns) return null;
   return (
     <section className="space-y-4">
       <div className="flex items-center gap-2 text-muted-foreground">
         <ArrowDownUp className="h-4 w-4" />
-        <h3 className="text-sm font-semibold uppercase tracking-wider">Sorting</h3>
+        <h3 className="text-sm font-semibold uppercase tracking-wider">
+          Sorting
+        </h3>
       </div>
       <div className="space-y-4 rounded-lg  ">
         <RadioGroup value={sortColumn ?? ""} onValueChange={setSortColumn}>
           {sortColumns.map((col) => (
-            <div key={col} className="flex items-center space-x-2 bg-background p-2 rounded-md border hover:border-blue-500">
+            <div
+              key={col}
+              className="flex items-center space-x-2 bg-background p-2 rounded-md border hover:border-blue-500"
+            >
               <RadioGroupItem value={col} id={`sort-${col}`} />
-              <label htmlFor={`sort-${col}`} className="flex-1 text-sm font-medium capitalize cursor-pointer">
+              <label
+                htmlFor={`sort-${col}`}
+                className="flex-1 text-sm font-medium capitalize cursor-pointer"
+              >
                 {col}
               </label>
             </div>
@@ -86,7 +111,11 @@ function SortSection() {
 
         {sortColumn && (
           <div className="space-y-2 pt-2 border-t">
-            <RadioGroup value={sortOrder} onValueChange={(v) => setSortOrder(v as "asc" | "desc")} className="flex gap-4">
+            <RadioGroup
+              value={sortOrder}
+              onValueChange={(v) => setSortOrder(v as "asc" | "desc")}
+              className="flex gap-4"
+            >
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="asc" id="asc" />
                 <label htmlFor="asc" className="text-sm">
@@ -108,13 +137,16 @@ function SortSection() {
 }
 
 function FilterSection() {
-  const { filterColumns, uniqueValues, filters, toggleFilterValue } = useSortFilter();
+  const { filterColumns, uniqueValues, filters, toggleFilterValue } =
+    useSortFilter();
 
   return (
     <section className="space-y-4 pb-4">
       <div className="flex items-center gap-2 text-muted-foreground">
         <Funnel className="h-4 w-4" />
-        <h3 className="text-sm font-semibold uppercase tracking-wider">Filters</h3>
+        <h3 className="text-sm font-semibold uppercase tracking-wider">
+          Filters
+        </h3>
       </div>
       <div className="space-y-6">
         {filterColumns.map((col) => (
@@ -129,7 +161,10 @@ function FilterSection() {
                     onCheckedChange={() => toggleFilterValue(col, value)}
                     className="data-[state=checked]:bg-blue-500 data-[state=checked]:border-blue-500"
                   />
-                  <label htmlFor={`filter-${col}-${value}`} className="text-sm font-medium cursor-pointer">
+                  <label
+                    htmlFor={`filter-${col}-${value}`}
+                    className="text-sm font-medium cursor-pointer"
+                  >
                     {value}
                   </label>
                 </div>
@@ -146,10 +181,19 @@ function FooterAction() {
   const { resetAll, applyChanges } = useSortFilter();
   return (
     <DialogFooter className="p-4 border-t bg-muted/20 flex-row gap-2 sm:justify-evenly items-center">
-      <Button variant="ghost" size="sm" onClick={resetAll} className="text-muted-foreground hover:text-destructive">
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={resetAll}
+        className="text-muted-foreground hover:text-destructive"
+      >
         <RotateCcw className="mr-2 h-3 w-3" /> Clear All
       </Button>
-      <Button onClick={applyChanges} size="sm" className="bg-blue-500 hover:bg-blue-600 text-white">
+      <Button
+        onClick={applyChanges}
+        size="sm"
+        className="bg-blue-500 hover:bg-blue-600 text-white"
+      >
         Apply Changes
       </Button>
     </DialogFooter>
