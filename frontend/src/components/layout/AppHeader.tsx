@@ -70,48 +70,44 @@ function AppHeader() {
       </div>
 
       {/* ── Center: search (desktop) ── */}
-      {!isMobile && (
-        <div className="flex-1 max-w-xl">
-          <button
-            onClick={() =>
-              document.dispatchEvent(
-                new KeyboardEvent("keydown", { key: "k", ctrlKey: true }),
-              )
-            }
-            className="group flex items-center w-full gap-2.5 h-9 px-4  bg-muted/60 border border-border/50 hover:bg-muted hover:border-border transition-all cursor-text text-left"
-          >
-            <Search className="size-4 text-muted-foreground shrink-0 transition-colors" />
-            <span className="flex-1 text-sm text-muted-foreground">
-              Search…
-            </span>
-            <div className="flex items-center gap-1 shrink-0">
-              <kbd className="inline-flex h-5 items-center rounded bg-background/80 px-1.5 font-mono text-[10px] text-muted-foreground border border-border/50">
-                Ctrl
-              </kbd>
-              <kbd className="inline-flex h-5 items-center rounded bg-background/80 px-1.5 font-mono text-[10px] text-muted-foreground border border-border/50">
-                K
-              </kbd>
-            </div>
-          </button>
-        </div>
-      )}
+      <div className="hidden md:block flex-1 max-w-xl">
+        <button
+          onClick={() =>
+            document.dispatchEvent(
+              new KeyboardEvent("keydown", { key: "k", ctrlKey: true }),
+            )
+          }
+          className="group flex items-center w-full gap-2.5 h-9 px-4  bg-muted/60 border border-border/50 hover:bg-muted hover:border-border transition-all cursor-text text-left"
+        >
+          <Search className="size-4 text-muted-foreground shrink-0 transition-colors" />
+          <span className="flex-1 text-sm text-muted-foreground">
+            Search…
+          </span>
+          <div className="flex items-center gap-1 shrink-0">
+            <kbd className="inline-flex h-5 items-center rounded bg-background/80 px-1.5 font-mono text-[10px] text-muted-foreground border border-border/50">
+              Ctrl
+            </kbd>
+            <kbd className="inline-flex h-5 items-center rounded bg-background/80 px-1.5 font-mono text-[10px] text-muted-foreground border border-border/50">
+              K
+            </kbd>
+          </div>
+        </button>
+      </div>
 
       {/* ── Right: actions ── */}
       <div className="flex items-center gap-1 shrink-0">
         {/* Mobile: search icon */}
-        {isMobile && (
-          <button
-            onClick={() =>
-              document.dispatchEvent(
-                new KeyboardEvent("keydown", { key: "k", ctrlKey: true }),
-              )
-            }
-            className="flex items-center justify-center size-9 rounded-full text-muted-foreground hover:bg-muted transition-colors cursor-pointer"
-            aria-label="Search"
-          >
-            <Search className="size-5" />
-          </button>
-        )}
+        <button
+          onClick={() =>
+            document.dispatchEvent(
+              new KeyboardEvent("keydown", { key: "k", ctrlKey: true }),
+            )
+          }
+          className="flex md:hidden items-center justify-center size-9 rounded-full text-muted-foreground hover:bg-muted transition-colors cursor-pointer"
+          aria-label="Search"
+        >
+          <Search className="size-5" />
+        </button>
 
         {/* Theme toggle */}
         <ModeToggle />
