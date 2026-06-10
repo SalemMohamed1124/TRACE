@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-VaultScan — DNS Misconfiguration Scanner
+Viper — DNS Misconfiguration Scanner
 =========================================
 Checks the target domain for common DNS security misconfigurations including
 missing or weak SPF, DMARC, and DKIM records, DNSSEC validation, zone
@@ -458,7 +458,7 @@ def get_mock_findings(target: str) -> List[Dict]:
 # Main
 # ---------------------------------------------------------------------------
 def main() -> None:
-    parser = base_argparser("VaultScan — DNS Misconfiguration Scanner")
+    parser = base_argparser("Viper — DNS Misconfiguration Scanner")
     args = parser.parse_args()
 
     target = normalize_url(args.target)

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-VaultScan -- Email Security Scanner
+Viper -- Email Security Scanner
 =====================================
 Deep email security checks beyond basic DNS:
 - SPF record analysis with includes/redirects
@@ -253,7 +253,7 @@ def check_mx_security(domain: str) -> List[Dict]:
             sock = socket.create_connection((mx, 25), timeout=5)
             banner = sock.recv(1024).decode(errors="ignore")
 
-            sock.sendall(b"EHLO vaultscan.test\r\n")
+            sock.sendall(b"EHLO viper.test\r\n")
             ehlo_resp = sock.recv(4096).decode(errors="ignore")
 
             if "STARTTLS" not in ehlo_resp.upper():
@@ -267,7 +267,7 @@ def check_mx_security(domain: str) -> List[Dict]:
                 ))
 
             # Check for open relay
-            sock.sendall(f"MAIL FROM:<test@vaultscan.com>\r\n".encode())
+            sock.sendall(f"MAIL FROM:<test@viper.com>\r\n".encode())
             mail_resp = sock.recv(1024).decode(errors="ignore")
 
             if "250" in mail_resp:
@@ -313,7 +313,7 @@ def get_mock_findings(target: str) -> List[Dict]:
 
 
 def main():
-    parser = base_argparser("VaultScan Email Security Scanner")
+    parser = base_argparser("Viper Email Security Scanner")
     args = parser.parse_args()
     target = normalize_url(args.target)
 

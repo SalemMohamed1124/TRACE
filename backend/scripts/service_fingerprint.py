@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-VaultScan — Service/Banner Fingerprinting
+Viper — Service/Banner Fingerprinting
 Connects to specified ports, grabs banners, and identifies vulnerable service versions.
 Outputs JSON array of findings to stdout.
 """
@@ -288,7 +288,7 @@ def check_vulnerabilities(
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="VaultScan Service Fingerprinting")
+    parser = argparse.ArgumentParser(description="Viper Service Fingerprinting")
     parser.add_argument("--target", required=True, help="Target hostname or IP")
     parser.add_argument(
         "--ports",

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-VaultScan — SSL/TLS Certificate Checker
+Viper — SSL/TLS Certificate Checker
 Checks certificate expiry, self-signed status, cipher suites, TLS version,
 HSTS headers, key size, and certificate chain validation.
 Uses Python built-in modules (ssl, socket) and requests for HTTP checks.
@@ -637,7 +637,7 @@ def check_certificate_chain(target: str, port: int = 443) -> list[dict[str, Any]
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="VaultScan SSL/TLS Checker")
+    parser = argparse.ArgumentParser(description="Viper SSL/TLS Checker")
     parser.add_argument("--target", required=True, help="Target hostname")
     parser.add_argument("--port", type=int, default=443, help="Port (default: 443)")
     args = parser.parse_args()

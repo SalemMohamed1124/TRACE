@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-VaultScan - NoSQL Injection Scanner
+Viper - NoSQL Injection Scanner
 =====================================
 Tests URL parameters, form inputs, and JSON API endpoints for NoSQL injection
 vulnerabilities. Covers MongoDB operator injection, authentication bypass,
@@ -858,7 +858,7 @@ def get_mock_findings(target: str) -> List[Dict]:
 # Main
 # ---------------------------------------------------------------------------
 def main() -> None:
-    parser = base_argparser("VaultScan - NoSQL Injection Scanner")
+    parser = base_argparser("Viper - NoSQL Injection Scanner")
     args = parser.parse_args()
 
     target = normalize_url(args.target)

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-VaultScan — Open Redirect Scanner (Production)
+Viper — Open Redirect Scanner (Production)
 =================================================
 Enhanced open redirect detection with:
 
@@ -385,7 +385,7 @@ def get_mock_findings(target: str) -> List[Dict]:
 # Main
 # ---------------------------------------------------------------------------
 def main() -> None:
-    parser = base_argparser("VaultScan — Open Redirect Scanner")
+    parser = base_argparser("Viper — Open Redirect Scanner")
     args = parser.parse_args()
 
     target = normalize_url(args.target)

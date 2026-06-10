@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-VaultScan — CSRF (Cross-Site Request Forgery) Detection Scanner (Production)
+Viper — CSRF (Cross-Site Request Forgery) Detection Scanner (Production)
 ==============================================================================
 Enhanced CSRF detection with:
 
@@ -610,7 +610,7 @@ def get_mock_findings(target: str) -> List[Dict]:
 # Main
 # ---------------------------------------------------------------------------
 def main() -> None:
-    parser = base_argparser("VaultScan — CSRF Detection Scanner")
+    parser = base_argparser("Viper — CSRF Detection Scanner")
     args = parser.parse_args()
 
     target = normalize_url(args.target)

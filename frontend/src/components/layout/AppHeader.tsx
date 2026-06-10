@@ -1,8 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import {
-  Shield,
   Bell,
   Search,
   LogOut,
@@ -11,13 +9,18 @@ import {
   Sun,
   Moon,
   Monitor,
+  Check,
+  ArrowRightLeft,
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { useAppSidebar } from "@/Contexts/AppSidebarContext";
 import { useAuth } from "@/hooks/useAuth";
+import { useOrg } from "@/hooks/useOrg";
 import { useTheme } from "next-themes";
 import { ModeToggle } from "./ModeToggle";
+import { TraceLogo } from "./TraceLogo";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,6 +28,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 // ─────────────────────────────────────────────────────────
 // AppHeader — transparent / same-bg-as-app, floating feel
@@ -33,6 +37,7 @@ function AppHeader() {
   const { toggle, isMobile } = useAppSidebar();
   const { user, logout } = useAuth();
   const { setTheme, theme } = useTheme();
+  const { organizations, activeOrgId, switchOrg } = useOrg();
   const router = useRouter();
 
   const userInitials = user?.name
@@ -60,12 +65,9 @@ function AppHeader() {
 
         <Link
           href="/overview"
-          className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+          className="flex items-center gap-2 hover:opacity-80 transition-opacity sm:ml-4 "
         >
-          <Shield className="size-5 text-primary shrink-0" />
-          <span className="font-bold text-[15px] tracking-tight text-foreground hidden sm:inline">
-            VaultScan
-          </span>
+          <TraceLogo />
         </Link>
       </div>
 
@@ -80,9 +82,7 @@ function AppHeader() {
           className="group flex items-center w-full gap-2.5 h-9 px-4  bg-muted/60 border border-border/50 hover:bg-muted hover:border-border transition-all cursor-text text-left"
         >
           <Search className="size-4 text-muted-foreground shrink-0 transition-colors" />
-          <span className="flex-1 text-sm text-muted-foreground">
-            Search…
-          </span>
+          <span className="flex-1 text-sm text-muted-foreground">Search…</span>
           <div className="flex items-center gap-1 shrink-0">
             <kbd className="inline-flex h-5 items-center rounded bg-background/80 px-1.5 font-mono text-[10px] text-muted-foreground border border-border/50">
               Ctrl
@@ -150,7 +150,7 @@ function AppHeader() {
 
           <DropdownMenuContent
             align="end"
-            className="w-52 rounded-xl border border-border bg-popover p-2 shadow-xl mt-1"
+            className="w-60 rounded-xl border border-border bg-popover p-2 shadow-xl mt-1"
           >
             <div className="px-2 py-2 mb-1">
               <p className="text-[13px] font-semibold text-foreground truncate">
@@ -160,6 +160,44 @@ function AppHeader() {
                 {user?.email ?? ""}
               </p>
             </div>
+
+            <DropdownMenuSeparator className="my-1" />
+
+            {/* Organization Switcher */}
+            <div className="px-2 pt-1 pb-0.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 flex items-center gap-1.5">
+              <ArrowRightLeft className="size-3" /> Switch Organization
+            </div>
+            <ScrollArea className="h-32 my-1">
+              <div className="space-y-0.5">
+                {(organizations ?? []).map((org) => (
+                  <DropdownMenuItem
+                    key={org.id}
+                    className="p-0 focus:bg-transparent"
+                    onSelect={(e) => {
+                      e.preventDefault();
+                      switchOrg(org.id);
+                    }}
+                  >
+                    <div className="flex w-full items-center gap-3 rounded-lg px-2 py-1.5 cursor-pointer hover:bg-muted transition-colors">
+                      <div className="flex size-7 items-center justify-center rounded-lg bg-muted text-[10px] font-bold text-primary border border-border shrink-0">
+                        {org.name[0].toUpperCase()}
+                      </div>
+                      <div className="flex-1 overflow-hidden">
+                        <p className="truncate text-xs font-semibold text-foreground">
+                          {org.name}
+                        </p>
+                        <p className="truncate text-[10px] text-muted-foreground">
+                          {org.role}
+                        </p>
+                      </div>
+                      {activeOrgId === org.id && (
+                        <Check className="size-3.5 text-primary shrink-0" />
+                      )}
+                    </div>
+                  </DropdownMenuItem>
+                ))}
+              </div>
+            </ScrollArea>
 
             <DropdownMenuSeparator className="my-1" />
 

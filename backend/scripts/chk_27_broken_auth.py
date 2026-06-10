@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-VaultScan — Broken Authentication Scanner
+Viper — Broken Authentication Scanner
 ============================================
 Comprehensive broken authentication analysis that checks:
   1. Find login pages by testing common paths
@@ -393,8 +393,8 @@ def check_username_enumeration(
 
         # Try common usernames as "likely valid" and a random one as "invalid"
         likely_valid_users = ["admin", "administrator", "root", "user"]
-        invalid_user = "xz_nonexistent_user_9q7w3k_vaultscan"
-        invalid_password = "definitely_wrong_password_vaultscan"
+        invalid_user = "xz_nonexistent_user_9q7w3k_viper"
+        invalid_password = "definitely_wrong_password_viper"
 
         # First, get response for the invalid user
         data_invalid = dict(form["hidden_fields"])
@@ -653,7 +653,7 @@ def check_session_fixation(
         # Attempt login (with invalid creds -- we just care about cookie change)
         data = dict(form["hidden_fields"])
         data[form["username_field"]] = "admin"
-        data[form["password_field"]] = "wrongpassword_vaultscan"
+        data[form["password_field"]] = "wrongpassword_viper"
 
         resp_after, err = safe_request(
             fresh_session, form["method"], form["action"],
@@ -726,7 +726,7 @@ def check_account_lockout(
         for i in range(MAX_ATTEMPTS):
             data = dict(form["hidden_fields"])
             data[form["username_field"]] = "admin"
-            data[form["password_field"]] = f"wrong_password_{i}_vaultscan"
+            data[form["password_field"]] = f"wrong_password_{i}_viper"
 
             resp, err = safe_request(
                 session, form["method"], form["action"],
@@ -1067,7 +1067,7 @@ def get_mock_findings(target: str) -> List[Dict]:
             raw_details={
                 "login_url": f"{target}/login",
                 "tested_valid_user": "admin",
-                "tested_invalid_user": "xz_nonexistent_user_9q7w3k_vaultscan",
+                "tested_invalid_user": "xz_nonexistent_user_9q7w3k_viper",
                 "valid_status": 200,
                 "invalid_status": 200,
                 "valid_length": 1245,
@@ -1081,7 +1081,7 @@ def get_mock_findings(target: str) -> List[Dict]:
 # Main
 # ---------------------------------------------------------------------------
 def main() -> None:
-    parser = base_argparser("VaultScan — Broken Authentication Scanner")
+    parser = base_argparser("Viper — Broken Authentication Scanner")
     args = parser.parse_args()
 
     target = normalize_url(args.target)

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-VaultScan -- Web Cache Poisoning Scanner
+Viper -- Web Cache Poisoning Scanner
 ==========================================
 Tests for cache poisoning via unkeyed headers and parameters.
 """
@@ -20,7 +20,7 @@ from scan_utils import (
 
 # Headers that might be unkeyed but reflected in response
 POISON_HEADERS = [
-    ("X-Forwarded-Host", "evil-cache-test.vaultscan.com", "X-Forwarded-Host header reflected"),
+    ("X-Forwarded-Host", "evil-cache-test.viper.com", "X-Forwarded-Host header reflected"),
     ("X-Forwarded-Scheme", "nothttps", "X-Forwarded-Scheme reflected"),
     ("X-Original-URL", "/admin", "X-Original-URL reflected"),
     ("X-Rewrite-URL", "/admin", "X-Rewrite-URL reflected"),
@@ -32,10 +32,10 @@ POISON_HEADERS = [
 
 # Query parameters that might be unkeyed
 POISON_PARAMS = [
-    ("utm_source", "vaultscan_cache_test", "UTM parameter reflected in cached response"),
-    ("callback", "vaultscan_jsonp_test", "JSONP callback parameter"),
+    ("utm_source", "viper_cache_test", "UTM parameter reflected in cached response"),
+    ("callback", "viper_jsonp_test", "JSONP callback parameter"),
     ("_", str(int(time.time())), "Cache buster parameter"),
-    ("cb", "vaultscan_cb_test", "Callback parameter"),
+    ("cb", "viper_cb_test", "Callback parameter"),
 ]
 
 
@@ -217,7 +217,7 @@ def get_mock_findings(target: str) -> List[Dict]:
 
 
 def main():
-    parser = base_argparser("VaultScan Cache Poisoning Scanner")
+    parser = base_argparser("Viper Cache Poisoning Scanner")
     args = parser.parse_args()
     target = normalize_url(args.target)
 

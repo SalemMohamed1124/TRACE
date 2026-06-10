@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-VaultScan -- SSRF (Server-Side Request Forgery) Scanner
+Viper -- SSRF (Server-Side Request Forgery) Scanner
 =========================================================
 Detects SSRF vulnerabilities by injecting internal/cloud-metadata URLs into
 URL-like parameters.  Crawls the target (depth-1) and tests discovered
@@ -592,7 +592,7 @@ def get_mock_findings(target: str) -> List[Dict]:
 # Main
 # ---------------------------------------------------------------------------
 def main() -> None:
-    parser = base_argparser("VaultScan -- SSRF (Server-Side Request Forgery) Scanner")
+    parser = base_argparser("Viper -- SSRF (Server-Side Request Forgery) Scanner")
     args = parser.parse_args()
 
     target = normalize_url(args.target)

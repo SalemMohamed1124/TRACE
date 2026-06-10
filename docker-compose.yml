@@ -1,25 +1,25 @@
 services:
   postgres:
     image: postgres:15-alpine
-    container_name: vaultscan-postgres
+    container_name: viper-postgres
     environment:
-      POSTGRES_DB: vaultscan
-      POSTGRES_USER: vaultscan
-      POSTGRES_PASSWORD: vaultscan_secret
+      POSTGRES_DB: viper
+      POSTGRES_USER: viper
+      POSTGRES_PASSWORD: viper_secret
     ports:
       - '5434:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U vaultscan']
+      test: ['CMD-SHELL', 'pg_isready -U viper']
       interval: 5s
       timeout: 5s
       retries: 5
 
   redis:
     image: redis:7-alpine
-    container_name: vaultscan-redis
+    container_name: viper-redis
     ports:
       - '6380:6379'
     volumes:
@@ -35,9 +35,9 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: vaultscan-backend
+    container_name: viper-backend
     environment:
-      DATABASE_URL: postgresql://vaultscan:vaultscan_secret@postgres:5432/vaultscan
+      DATABASE_URL: postgresql://viper:viper_secret@postgres:5432/viper
       JWT_SECRET: change-me-min-32-characters-long-production
       JWT_REFRESH_SECRET: change-me-refresh-min-32-chars-production
       REDIS_HOST: redis
@@ -59,7 +59,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: vaultscan-frontend
+    container_name: viper-frontend
     environment:
       NEXT_PUBLIC_API_URL: http://localhost:3001
     ports:

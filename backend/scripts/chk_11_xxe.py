@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-VaultScan - XML External Entity (XXE) Injection Scanner
+Viper - XML External Entity (XXE) Injection Scanner
 ========================================================
 Discovers XML-accepting endpoints (SOAP, REST, XML-RPC, forms) and tests
 them for XXE vulnerabilities using entity expansion, parameter entities,
@@ -520,7 +520,7 @@ def get_mock_findings(target: str) -> List[Dict]:
 # ---------------------------------------------------------------------------
 def main() -> None:
     parser = base_argparser(
-        "VaultScan - XML External Entity (XXE) Injection Scanner"
+        "Viper - XML External Entity (XXE) Injection Scanner"
     )
     args = parser.parse_args()
 

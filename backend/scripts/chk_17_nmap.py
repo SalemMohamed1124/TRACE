@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-VaultScan — Port Scanner
+Viper — Port Scanner
 Uses nmap if available, falls back to Python socket scanning.
 Outputs JSON array of findings to stdout.
 """
@@ -239,7 +239,7 @@ def build_findings(target: str, open_ports: list[dict[str, Any]]) -> list[dict[s
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="VaultScan Port Scanner")
+    parser = argparse.ArgumentParser(description="Viper Port Scanner")
     parser.add_argument("--target", required=True, help="Target hostname or IP")
     parser.add_argument("--ports", default="1-1000", help="Port range (e.g., 1-1000)")
     parser.add_argument("--full", action="store_true", help="Scan all 65535 ports")

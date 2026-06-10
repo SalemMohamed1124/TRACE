@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-VaultScan -- HTTP Parameter Pollution (HPP) Scanner
+Viper -- HTTP Parameter Pollution (HPP) Scanner
 =====================================================
 Tests for HPP vulnerabilities where duplicate parameters
 cause unexpected server behavior.
@@ -38,7 +38,7 @@ def test_hpp_on_url(session, url: str, timeout: int) -> List[Dict]:
         original_value = values[0] if values else ""
 
         # Test 1: Duplicate parameter with different value
-        test_value = "hpp_test_vaultscan"
+        test_value = "hpp_test_viper"
         new_query = parsed.query + f"&{param_name}={test_value}"
         test_url = urlunparse(parsed._replace(query=new_query))
 
@@ -122,12 +122,12 @@ def test_hpp_on_form(session, form: Dict, timeout: int) -> List[Dict]:
             continue
 
         # Duplicate the parameter by adding it to the URL query string
-        test_url = f"{action}?{param_name}=hpp_test_vaultscan"
+        test_url = f"{action}?{param_name}=hpp_test_viper"
         test_resp, err = safe_request(session, "POST", test_url, timeout=timeout, data=form_data)
         if err or not test_resp:
             continue
 
-        if "hpp_test_vaultscan" in test_resp.text:
+        if "hpp_test_viper" in test_resp.text:
             findings.append(make_finding(
                 vulnerability="HTTP Parameter Pollution in Form",
                 severity="MEDIUM",
@@ -161,7 +161,7 @@ def get_mock_findings(target: str) -> List[Dict]:
 
 
 def main():
-    parser = base_argparser("VaultScan HTTP Parameter Pollution Scanner")
+    parser = base_argparser("Viper HTTP Parameter Pollution Scanner")
     args = parser.parse_args()
     target = normalize_url(args.target)
 

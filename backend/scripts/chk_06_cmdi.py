@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-VaultScan - Command Injection Scanner
+Viper - Command Injection Scanner
 ======================================
 Tests URL parameters and form inputs for OS command injection
 vulnerabilities using output-based detection (Linux/Windows command
@@ -514,7 +514,7 @@ def get_mock_findings(target: str) -> List[Dict]:
 # Main
 # ---------------------------------------------------------------------------
 def main() -> None:
-    parser = base_argparser("VaultScan - Command Injection Scanner")
+    parser = base_argparser("Viper - Command Injection Scanner")
     args = parser.parse_args()
 
     target = normalize_url(args.target)

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-VaultScan -- Rate Limiting & Brute Force Protection Scanner
+Viper -- Rate Limiting & Brute Force Protection Scanner
 ============================================================
 Tests for missing rate limiting on sensitive endpoints.
 """
@@ -256,7 +256,7 @@ def get_mock_findings(target: str) -> List[Dict]:
 
 
 def main():
-    parser = base_argparser("VaultScan Rate Limiting Scanner")
+    parser = base_argparser("Viper Rate Limiting Scanner")
     args = parser.parse_args()
     target = normalize_url(args.target)
 

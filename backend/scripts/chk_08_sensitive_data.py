@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-VaultScan - Sensitive Data Exposure Scanner
+Viper - Sensitive Data Exposure Scanner
 =============================================
 Scans web pages for exposed secrets, API keys, stack traces, information
 leakage in HTML comments, and JavaScript source maps.  Crawls same-domain
@@ -686,7 +686,7 @@ def get_mock_findings(target: str) -> List[Dict]:
 # Main
 # ---------------------------------------------------------------------------
 def main() -> None:
-    parser = base_argparser("VaultScan - Sensitive Data Exposure Scanner")
+    parser = base_argparser("Viper - Sensitive Data Exposure Scanner")
     args = parser.parse_args()
 
     target = normalize_url(args.target)

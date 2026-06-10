@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-VaultScan -- LDAP Injection Scanner
+Viper -- LDAP Injection Scanner
 =====================================
 Tests for LDAP injection vulnerabilities in login forms,
 search parameters, and common LDAP-related URL patterns.
@@ -245,8 +245,8 @@ def test_ldap_auth_bypass(session, form: Dict, timeout: int) -> List[Dict]:
         name = inp.get("name")
         if name:
             baseline_data[name] = inp.get("value", "")
-    baseline_data[username_field] = "invalid_user_vaultscan_test"
-    baseline_data[password_field] = "invalid_pass_vaultscan_test"
+    baseline_data[username_field] = "invalid_user_viper_test"
+    baseline_data[password_field] = "invalid_pass_viper_test"
 
     if method == "POST":
         baseline_resp, err = safe_request(session, "POST", action, timeout=timeout, data=baseline_data)
@@ -510,7 +510,7 @@ def get_mock_findings(target: str) -> List[Dict]:
 # ---------------------------------------------------------------------------
 
 def main():
-    parser = base_argparser("VaultScan LDAP Injection Scanner")
+    parser = base_argparser("Viper LDAP Injection Scanner")
     args = parser.parse_args()
     target = normalize_url(args.target)
 

@@ -21,7 +21,7 @@ test.describe("Landing Page", () => {
     await page.goto("/");
     await page.waitForLoadState("domcontentloaded");
 
-    await expect(page.locator("text=VaultScan").first()).toBeVisible({ timeout: 10000 });
+    await expect(page.locator("text=TRACE").first()).toBeVisible({ timeout: 10000 });
     await expect(page.locator("text=Get Started Free").first()).toBeVisible({ timeout: 10000 });
   });
 
@@ -170,7 +170,7 @@ test.describe("AI Chat Widget", () => {
       await chatButton.click();
       await page.waitForTimeout(500);
 
-      await expect(page.locator("text=VaultScan AI")).toBeVisible();
+      await expect(page.locator("text=TRACE AI")).toBeVisible();
       await expect(page.locator("text=How can I help you?")).toBeVisible();
     }
   });

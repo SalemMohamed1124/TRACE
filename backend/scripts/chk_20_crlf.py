@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-VaultScan — CRLF Injection / HTTP Header Injection Scanner
+Viper — CRLF Injection / HTTP Header Injection Scanner
 ============================================================
 Detects CRLF injection vulnerabilities that allow attackers to inject
 arbitrary HTTP headers or split HTTP responses.
@@ -51,10 +51,10 @@ MAX_CRAWL_PAGES = 5
 
 # Unique marker used to detect injection — random enough to avoid FPs
 INJECTED_HEADER_NAME = "X-Crlf-Test"
-INJECTED_HEADER_VALUE = "vaultscan_crlf_7f3a"
+INJECTED_HEADER_VALUE = "viper_crlf_7f3a"
 INJECTED_COOKIE_NAME = "crlf"
 INJECTED_COOKIE_VALUE = "injected_7f3a"
-INJECTED_BODY_MARKER = "<vaultscan_crlf_split>"
+INJECTED_BODY_MARKER = "<viper_crlf_split>"
 
 # ---------------------------------------------------------------------------
 # Payloads
@@ -402,7 +402,7 @@ def check_header_reflection(
     if not params:
         return findings
 
-    reflection_marker = "vaultscanreflect42"
+    reflection_marker = "viperreflect42"
 
     for param in params:
         parsed = urlparse(url)
@@ -459,18 +459,18 @@ def get_mock_findings(target: str) -> List[Dict]:
             evidence=(
                 "Payload 'URL-encoded CRLF header injection (%0d%0a)' in "
                 "parameter 'q' caused the injected header "
-                "'X-Crlf-Test: vaultscan_crlf_7f3a' to appear in the HTTP "
+                "'X-Crlf-Test: viper_crlf_7f3a' to appear in the HTTP "
                 "response headers (status 302)."
             ),
             category=CATEGORY,
             confidence="HIGH",
             raw_details={
                 "parameter": "q",
-                "payload": "%0d%0aX-Crlf-Test:vaultscan_crlf_7f3a",
+                "payload": "%0d%0aX-Crlf-Test:viper_crlf_7f3a",
                 "payload_description": "URL-encoded CRLF header injection (%0d%0a)",
                 "status_code": 302,
-                "test_url": f"{target}/search?q=test%0d%0aX-Crlf-Test:vaultscan_crlf_7f3a",
-                "injected_header": "X-Crlf-Test: vaultscan_crlf_7f3a",
+                "test_url": f"{target}/search?q=test%0d%0aX-Crlf-Test:viper_crlf_7f3a",
+                "injected_header": "X-Crlf-Test: viper_crlf_7f3a",
             },
         ),
     ]
@@ -480,7 +480,7 @@ def get_mock_findings(target: str) -> List[Dict]:
 # Main
 # ---------------------------------------------------------------------------
 def main() -> None:
-    parser = base_argparser("VaultScan — CRLF Injection / HTTP Header Injection Scanner")
+    parser = base_argparser("Viper — CRLF Injection / HTTP Header Injection Scanner")
     args = parser.parse_args()
 
     target = normalize_url(args.target)

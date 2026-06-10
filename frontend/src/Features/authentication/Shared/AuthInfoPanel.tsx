@@ -1,6 +1,7 @@
 "use client";
 
-import { Brain, ShieldCheck, Activity, FileText, Shield } from "lucide-react";
+import { Brain, ShieldCheck, Activity, FileText } from "lucide-react";
+import { TraceLogo, TraceIcon } from "@/components/layout/TraceLogo";
 import { cn } from "@/lib/utils";
 
 const features = [
@@ -57,19 +58,14 @@ export function AuthInfoPanel() {
       {/* Background patterns */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="absolute top-[10%] left-[10%] h-24 w-24 opacity-[0.05]">
-          <Shield className="h-full w-full text-primary" />
+          <TraceIcon className="h-full w-full" />
         </div>
       </div>
 
       <div className="relative z-10">
-        <div className="flex items-center gap-4 mb-8">
-          <div className="flex h-12 w-12 items-center justify-center bg-primary">
-            <Shield className="h-7 w-7 text-primary-foreground" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-black text-foreground tracking-tighter uppercase leading-none">VaultScan</h1>
-            <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-[0.2em] mt-1 opacity-60">Security Intelligence</p>
-          </div>
+          <div className="flex items-center gap-4 mb-8">
+          <TraceLogo iconClassName="size-12" nameClassName="text-2xl font-black tracking-tighter uppercase" />
+          <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-[0.2em] mt-1 opacity-60">Security Intelligence</p>
         </div>
         <h2 className="text-4xl font-black text-foreground mb-4 tracking-tighter uppercase leading-[0.9]">
           Secure your <br/> digital assets.

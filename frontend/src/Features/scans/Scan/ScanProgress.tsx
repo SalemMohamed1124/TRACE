@@ -393,7 +393,7 @@ export function ScanProgress({ scanId, onComplete }: ScanProgressProps) {
             <div className="h-2.5 w-2.5 rounded-full bg-[#27c93f]" />
           </div>
           <span className="text-[10px] text-slate-400 font-bold ml-2 tracking-tight">
-            VaultScan Terminal — {phase}
+            TRACE Terminal — {phase}
           </span>
           <div className="flex-1" />
           <Radio className="h-3 w-3 text-red-400 animate-pulse" />

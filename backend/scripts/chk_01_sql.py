@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-VaultScan - Comprehensive SQL Injection Scanner
+Viper - Comprehensive SQL Injection Scanner
 ================================================
 Tests URL parameters and form inputs for SQL injection vulnerabilities
 using error-based, time-based blind, boolean-based blind, and UNION-based
@@ -893,7 +893,7 @@ def get_mock_findings(target: str) -> List[Dict]:
 # Main
 # ---------------------------------------------------------------------------
 def main() -> None:
-    parser = base_argparser("VaultScan - Comprehensive SQL Injection Scanner")
+    parser = base_argparser("Viper - Comprehensive SQL Injection Scanner")
     args = parser.parse_args()
 
     target = normalize_url(args.target)

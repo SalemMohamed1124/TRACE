@@ -115,7 +115,7 @@ export const steps = [
     step: "01",
     title: "Add Your Assets",
     description:
-      "Register your domains, IPs, URLs, or CIDR ranges. VaultScan validates and organizes them automatically.",
+      "Register your domains, IPs, URLs, or CIDR ranges. TRACE validates and organizes them automatically.",
     icon: Server,
   },
   {

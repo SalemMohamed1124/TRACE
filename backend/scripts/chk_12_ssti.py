@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-VaultScan - Server-Side Template Injection (SSTI) Scanner
+Viper - Server-Side Template Injection (SSTI) Scanner
 ==========================================================
 Tests URL parameters and form inputs for server-side template injection
 vulnerabilities using expression evaluation, error-based detection, and
@@ -414,7 +414,7 @@ def get_mock_findings(target: str) -> List[Dict]:
 # Main
 # ---------------------------------------------------------------------------
 def main() -> None:
-    parser = base_argparser("VaultScan - Server-Side Template Injection Scanner")
+    parser = base_argparser("Viper - Server-Side Template Injection Scanner")
     args = parser.parse_args()
 
     target = normalize_url(args.target)

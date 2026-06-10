@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-VaultScan — Subdomain Takeover Scanner (Production)
+Viper — Subdomain Takeover Scanner (Production)
 =====================================================
 Detects subdomain takeover vulnerabilities by:
 
@@ -602,7 +602,7 @@ def get_mock_findings(target: str) -> List[Dict]:
 # Main
 # ---------------------------------------------------------------------------
 def main() -> None:
-    parser = base_argparser("VaultScan — Subdomain Takeover Scanner")
+    parser = base_argparser("Viper — Subdomain Takeover Scanner")
     args = parser.parse_args()
 
     target = normalize_url(args.target)

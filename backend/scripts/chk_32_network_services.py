@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-VaultScan — Network Services Vulnerability Scanner
+Viper — Network Services Vulnerability Scanner
 ====================================================
 Checks for insecure network services including:
   1.  FTP anonymous access (port 21)
@@ -768,7 +768,7 @@ def resolve_host(target: str) -> str:
 # Main
 # ---------------------------------------------------------------------------
 def main() -> None:
-    parser = base_argparser("VaultScan — Network Services Vulnerability Scanner")
+    parser = base_argparser("Viper — Network Services Vulnerability Scanner")
     parser.add_argument(
         "--ports",
         type=str,

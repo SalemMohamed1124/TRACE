@@ -169,7 +169,7 @@ export function AIChatWidget({ scanId }: AIChatWidgetProps) {
           </div>
           <div>
             <h3 className="text-sm font-semibold text-foreground">
-              VaultScan AI
+              TRACE AI
             </h3>
             <p className="text-[10px] text-muted-foreground">
               Security Assistant

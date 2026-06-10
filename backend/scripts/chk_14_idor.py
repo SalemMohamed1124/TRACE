@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-VaultScan — IDOR (Insecure Direct Object Reference) Detection Scanner (Production)
+Viper — IDOR (Insecure Direct Object Reference) Detection Scanner (Production)
 =====================================================================================
 Enhanced IDOR detection with:
 
@@ -615,7 +615,7 @@ def get_mock_findings(target: str) -> List[Dict]:
 # Main
 # ---------------------------------------------------------------------------
 def main() -> None:
-    parser = base_argparser("VaultScan — IDOR Detection Scanner")
+    parser = base_argparser("Viper — IDOR Detection Scanner")
     args = parser.parse_args()
 
     target = normalize_url(args.target)

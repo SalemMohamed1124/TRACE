@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Field, FieldLabel, FieldError } from "@/components/ui/field";
 import { Spinner } from "@/components/ui/spinner";
-import { Shield, ArrowRight, Eye, EyeOff, Lock } from "lucide-react";
+import { ArrowRight, Eye, EyeOff, Lock } from "lucide-react";
+import { TraceLogo } from "@/components/layout/TraceLogo";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -35,10 +36,7 @@ export function RegisterForm() {
     <div className="w-full max-w-[420px] mx-auto animate-fade-in-up px-4 sm:px-0">
       {/* Brand Header - Hidden on desktop in split layout */}
       <Link href="/" className="flex lg:hidden items-center gap-3 mb-8 group cursor-pointer w-fit mx-auto transition-transform active:scale-95 focus:outline-none">
-        <div className="flex h-10 w-10 items-center justify-center bg-primary">
-          <Shield className="h-5 w-5 text-white" />
-        </div>
-        <h2 className="text-2xl font-bold text-foreground tracking-tight group-hover:text-primary transition-colors">VaultScan</h2>
+        <TraceLogo nameClassName="text-2xl font-bold tracking-tight group-hover:text-primary transition-colors" />
       </Link>
 
       <div className="w-full">

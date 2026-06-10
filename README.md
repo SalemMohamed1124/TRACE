@@ -1,4 +1,4 @@
-# VaultScan
+# Viper
 
 > AI-Powered Vulnerability Scanner — Graduation Project
 > Damietta University, Faculty of Computers & AI
@@ -40,7 +40,7 @@
 ```bash
 # Clone and setup
 git clone <repo-url>
-cd vaultscan
+cd viper
 
 # Start infrastructure (PostgreSQL + Redis)
 docker compose up -d
@@ -78,7 +78,7 @@ Open http://localhost:3000
 
 | Variable             | Description                         | Default                                                            |
 | -------------------- | ----------------------------------- | ------------------------------------------------------------------ |
-| `DATABASE_URL`       | PostgreSQL connection string        | `postgresql://vaultscan:vaultscan_secret@localhost:5434/vaultscan` |
+| `DATABASE_URL`       | PostgreSQL connection string        | `postgresql://viper:viper_secret@localhost:5434/viper` |
 | `JWT_SECRET`         | JWT signing secret (min 32 chars)   | —                                                                  |
 | `JWT_REFRESH_SECRET` | Refresh token secret (min 32 chars) | —                                                                  |
 | `REDIS_HOST`         | Redis host                          | `localhost`                                                        |
@@ -97,7 +97,7 @@ Open http://localhost:3000
 ## Architecture
 
 ```
-vaultscan/
+viper/
   backend/           # NestJS API server
     scripts/           # Python scan scripts
     src/

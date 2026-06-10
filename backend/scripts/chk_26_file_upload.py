@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-VaultScan -- File Upload Vulnerability Scanner
+Viper -- File Upload Vulnerability Scanner
 ===============================================
 Tests for insecure file upload handling:
 - Upload form detection
@@ -277,7 +277,7 @@ def get_mock_findings(target: str) -> List[Dict]:
 
 
 def main():
-    parser = base_argparser("VaultScan File Upload Vulnerability Scanner")
+    parser = base_argparser("Viper File Upload Vulnerability Scanner")
     args = parser.parse_args()
     target = normalize_url(args.target)
 

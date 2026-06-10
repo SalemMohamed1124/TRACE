@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-VaultScan — JWT Vulnerability Scanner
+Viper — JWT Vulnerability Scanner
 =======================================
 Comprehensive JWT security analysis that checks:
   1. Detect JWTs in responses (cookies, headers, body) via eyJ regex
@@ -786,7 +786,7 @@ def get_mock_findings(target: str) -> List[Dict]:
 # Main
 # ---------------------------------------------------------------------------
 def main() -> None:
-    parser = base_argparser("VaultScan — JWT Vulnerability Scanner")
+    parser = base_argparser("Viper — JWT Vulnerability Scanner")
     args = parser.parse_args()
 
     target = normalize_url(args.target)

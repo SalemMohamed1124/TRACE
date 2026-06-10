@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Shield } from "lucide-react";
+import { TraceLogo } from "@/components/layout/TraceLogo";
 
 export function LandingFooter() {
   return (
@@ -8,12 +8,7 @@ export function LandingFooter() {
         <div className="grid md:grid-cols-4 gap-8 mb-10">
           <div className="md:col-span-1">
             <div className="flex items-center gap-2.5 mb-4">
-              <div className="h-8 w-8 bg-primary flex items-center justify-center">
-                <Shield className="h-4 w-4 text-primary-foreground" />
-              </div>
-              <span className="text-base font-bold text-foreground">
-                VaultScan
-              </span>
+              <TraceLogo nameClassName="text-base" />
             </div>
             <p className="text-sm text-slate-500 leading-relaxed">
               AI-powered vulnerability scanning platform for modern security
@@ -108,7 +103,7 @@ export function LandingFooter() {
 
         <div className="pt-6 flex flex-col sm:flex-row items-center justify-center gap-4">
           <p className="text-[10px] text-muted-foreground/60 font-medium">
-            &copy; {new Date().getFullYear()} VaultScan. All rights reserved.
+            &copy; {new Date().getFullYear()} TRACE. All rights reserved.
           </p>
         </div>
       </div>

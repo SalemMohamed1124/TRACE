@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-VaultScan -- Prototype Pollution Scanner
+Viper -- Prototype Pollution Scanner
 ==========================================
 Tests for JavaScript prototype pollution via URL params,
 JSON bodies, and query string manipulation.
@@ -23,18 +23,18 @@ from scan_utils import (
 
 # Prototype pollution payloads for URL parameters
 URL_PAYLOADS = [
-    ("__proto__[polluted]", "vaultscan_pp_test"),
-    ("__proto__.polluted", "vaultscan_pp_test"),
-    ("constructor[prototype][polluted]", "vaultscan_pp_test"),
-    ("constructor.prototype.polluted", "vaultscan_pp_test"),
+    ("__proto__[polluted]", "viper_pp_test"),
+    ("__proto__.polluted", "viper_pp_test"),
+    ("constructor[prototype][polluted]", "viper_pp_test"),
+    ("constructor.prototype.polluted", "viper_pp_test"),
     ("__proto__[status]", "polluted"),
-    ("__proto__[toString]", "vaultscan"),
+    ("__proto__[toString]", "viper"),
 ]
 
 # JSON body payloads
 JSON_PAYLOADS = [
-    {"__proto__": {"polluted": "vaultscan_pp_test"}},
-    {"constructor": {"prototype": {"polluted": "vaultscan_pp_test"}}},
+    {"__proto__": {"polluted": "viper_pp_test"}},
+    {"constructor": {"prototype": {"polluted": "viper_pp_test"}}},
     {"__proto__": {"isAdmin": True}},
     {"__proto__": {"role": "admin"}},
 ]
@@ -68,7 +68,7 @@ def check_url_prototype_pollution(session, urls: List[str], timeout: int) -> Lis
                 continue
 
             # Check if pollution indicator appears in response
-            if "vaultscan_pp_test" in resp.text and "vaultscan_pp_test" not in baseline_body:
+            if "viper_pp_test" in resp.text and "viper_pp_test" not in baseline_body:
                 findings.append(make_finding(
                     vulnerability="Prototype Pollution via URL Parameter",
                     severity="HIGH",
@@ -136,7 +136,7 @@ def check_json_prototype_pollution(session, urls: List[str], timeout: int) -> Li
                     body = resp.text[:3000].lower()
 
                     # Check for pollution indicators
-                    if "vaultscan_pp_test" in resp.text:
+                    if "viper_pp_test" in resp.text:
                         findings.append(make_finding(
                             vulnerability="Prototype Pollution via JSON Body",
                             severity="HIGH",
@@ -227,7 +227,7 @@ def get_mock_findings(target: str) -> List[Dict]:
 
 
 def main():
-    parser = base_argparser("VaultScan Prototype Pollution Scanner")
+    parser = base_argparser("Viper Prototype Pollution Scanner")
     args = parser.parse_args()
     target = normalize_url(args.target)
 

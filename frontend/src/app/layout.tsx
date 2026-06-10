@@ -19,7 +19,7 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "VaultScan — AI-Powered Vulnerability Scanner",
+  title: "TRACE — AI-Powered Vulnerability Scanner",
   description:
     "Multi-tenant vulnerability scanning platform powered by Google Gemini AI",
 };

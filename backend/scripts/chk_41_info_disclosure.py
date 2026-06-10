@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-VaultScan -- Information Disclosure Scanner
+Viper -- Information Disclosure Scanner
 =============================================
 Deep information disclosure checks:
 - Error page analysis (stack traces, debug info)
@@ -27,7 +27,7 @@ from scan_utils import (
 
 # Error trigger URLs
 ERROR_TRIGGERS = [
-    ("404 Error", "/__vaultscan_nonexistent_404__"),
+    ("404 Error", "/__viper_nonexistent_404__"),
     ("500 Error", "/%00"),
     ("Type Error", "/?id[]="),
     ("Format String", "/?q=%s%s%s%s%s"),
@@ -287,7 +287,7 @@ def get_mock_findings(target: str) -> List[Dict]:
         make_finding(
             vulnerability="Information Disclosure: Python Stack Trace",
             severity="HIGH",
-            location=f"{target}/__vaultscan_nonexistent_404__",
+            location=f"{target}/__viper_nonexistent_404__",
             evidence="Error page reveals Python Stack Trace with file paths and line numbers.",
             category="INFORMATION_DISCLOSURE",
         ),
@@ -302,7 +302,7 @@ def get_mock_findings(target: str) -> List[Dict]:
 
 
 def main():
-    parser = base_argparser("VaultScan Information Disclosure Scanner")
+    parser = base_argparser("Viper Information Disclosure Scanner")
     args = parser.parse_args()
     target = normalize_url(args.target)
 

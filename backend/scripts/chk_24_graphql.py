@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-VaultScan — GraphQL Security Scanner
+Viper — GraphQL Security Scanner
 ======================================
 Deep GraphQL endpoint security testing:
   1. Discover GraphQL endpoints by testing common paths
@@ -648,7 +648,7 @@ def get_mock_findings(target: str) -> List[Dict]:
 # Main
 # ---------------------------------------------------------------------------
 def main() -> None:
-    parser = base_argparser("VaultScan — GraphQL Security Scanner")
+    parser = base_argparser("Viper — GraphQL Security Scanner")
     args = parser.parse_args()
 
     target = normalize_url(args.target)

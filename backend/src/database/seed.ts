@@ -46,7 +46,7 @@ const dataSource = new DataSource({
 });
 
 async function seed(): Promise<void> {
-  console.log('🌱 Starting VaultScan seed...');
+  console.log('🌱 Starting TRACE seed...');
   await dataSource.initialize();
   console.log('✅ Database connected');
 

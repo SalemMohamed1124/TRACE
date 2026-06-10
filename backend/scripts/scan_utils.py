@@ -1,5 +1,5 @@
 """
-VaultScan Shared Scanning Utilities
+Viper Shared Scanning Utilities
 Common functions used across all scanning scripts.
 """
 

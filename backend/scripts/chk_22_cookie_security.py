@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-VaultScan — Cookie Security Analyzer
+Viper — Cookie Security Analyzer
 ======================================
 Comprehensive cookie security analysis that checks:
   1. Secure flag (missing on HTTPS = vulnerability)
@@ -664,7 +664,7 @@ def get_mock_findings(target: str) -> List[Dict]:
 # Main
 # ---------------------------------------------------------------------------
 def main() -> None:
-    parser = base_argparser("VaultScan — Cookie Security Analyzer")
+    parser = base_argparser("Viper — Cookie Security Analyzer")
     args = parser.parse_args()
 
     target = normalize_url(args.target)

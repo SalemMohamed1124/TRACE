@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-VaultScan - Local File Inclusion / Directory Traversal Scanner
+Viper - Local File Inclusion / Directory Traversal Scanner
 ==============================================================
 Tests URL parameters and form inputs for LFI and path traversal
 vulnerabilities using Linux/Windows traversal payloads, null byte
@@ -468,7 +468,7 @@ def get_mock_findings(target: str) -> List[Dict]:
 # Main
 # ---------------------------------------------------------------------------
 def main() -> None:
-    parser = base_argparser("VaultScan - Local File Inclusion / Directory Traversal Scanner")
+    parser = base_argparser("Viper - Local File Inclusion / Directory Traversal Scanner")
     args = parser.parse_args()
 
     target = normalize_url(args.target)

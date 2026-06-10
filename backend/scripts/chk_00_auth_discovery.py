@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-VaultScan -- Authentication Discovery & Session Acquisition
+TRACE -- Authentication Discovery & Session Acquisition
 =============================================================
 Attempts to acquire an authenticated session before other scanners run.
 Tries:
@@ -285,8 +285,8 @@ def attempt_auth(session, base_url: str, timeout: int) -> Dict:
     baseline_session = create_session(timeout=timeout)
     baseline_data = {
         **login_form["other_fields"],
-        login_form["username_field"]: "vaultscan_invalid_user_xyz",
-        login_form["password_field"]: "vaultscan_invalid_pass_xyz",
+        login_form["username_field"]: "trace_invalid_user_xyz",
+        login_form["password_field"]: "trace_invalid_pass_xyz",
     }
     baseline_resp, _ = safe_request(
         baseline_session, login_form["method"], login_form["action"],
@@ -391,7 +391,7 @@ def get_mock_findings(target: str) -> List[Dict]:
 
 
 def main():
-    parser = base_argparser("VaultScan Auth Discovery & Session Acquisition")
+    parser = base_argparser("TRACE Auth Discovery & Session Acquisition")
     args = parser.parse_args()
     target = normalize_url(args.target)
 

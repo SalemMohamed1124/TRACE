@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-VaultScan -- WAF Detection & Analysis Scanner
+Viper -- WAF Detection & Analysis Scanner
 ===============================================
 Detects and identifies Web Application Firewalls,
 tests basic bypass techniques, and reports WAF configuration issues.
@@ -244,7 +244,7 @@ def get_mock_findings(target: str) -> List[Dict]:
 
 
 def main():
-    parser = base_argparser("VaultScan WAF Detection Scanner")
+    parser = base_argparser("Viper WAF Detection Scanner")
     args = parser.parse_args()
     target = normalize_url(args.target)
 

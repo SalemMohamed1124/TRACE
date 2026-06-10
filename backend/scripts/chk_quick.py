@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-VaultScan -- Quick Vulnerability Checker
+Viper -- Quick Vulnerability Checker
 =========================================
 Performs rapid security checks against a target URL:
 
@@ -763,7 +763,7 @@ def get_mock_findings(target: str) -> List[Dict]:
 
 def main() -> None:
     """Run all quick security checks and output findings as JSON."""
-    parser = base_argparser("VaultScan Quick Security Checker")
+    parser = base_argparser("Viper Quick Security Checker")
     args = parser.parse_args()
 
     target = normalize_url(args.target)

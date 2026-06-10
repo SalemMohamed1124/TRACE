@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-VaultScan -- CSV/Formula Injection Scanner
+Viper -- CSV/Formula Injection Scanner
 ============================================
 Tests for CSV injection (aka formula injection) vulnerabilities
 where user input can inject spreadsheet formulas.
@@ -143,7 +143,7 @@ def get_mock_findings(target: str) -> List[Dict]:
 
 
 def main():
-    parser = base_argparser("VaultScan CSV/Formula Injection Scanner")
+    parser = base_argparser("Viper CSV/Formula Injection Scanner")
     args = parser.parse_args()
     target = normalize_url(args.target)
 

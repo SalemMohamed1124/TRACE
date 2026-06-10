@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-VaultScan — Host Header Injection Scanner
+Viper — Host Header Injection Scanner
 ==========================================
 Detects Host header injection vulnerabilities that can lead to:
   1. Password reset poisoning (Host header reflected in response body)
@@ -43,8 +43,8 @@ from scan_utils import (
 # Constants
 # ---------------------------------------------------------------------------
 CATEGORY = "HOST_HEADER"
-CANARY_HOST = "evil.vaultscan-inject.com"
-CANARY_MARKER = "vaultscan-inject"
+CANARY_HOST = "evil.viper-inject.com"
+CANARY_MARKER = "viper-inject"
 MAX_RECV_BYTES = 65536
 DEFAULT_SOCKET_TIMEOUT = 10
 
@@ -632,7 +632,7 @@ def get_mock_findings(target: str) -> List[Dict]:
 # Main
 # ---------------------------------------------------------------------------
 def main() -> None:
-    parser = base_argparser("VaultScan — Host Header Injection Scanner")
+    parser = base_argparser("Viper — Host Header Injection Scanner")
     args = parser.parse_args()
 
     target = normalize_url(args.target)

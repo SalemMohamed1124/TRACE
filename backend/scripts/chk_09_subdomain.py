@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-VaultScan — Subdomain Enumeration Scanner (Production)
+Viper — Subdomain Enumeration Scanner (Production)
 =======================================================
 Enumerates subdomains using multiple techniques:
 
@@ -668,7 +668,7 @@ def get_mock_findings(target: str) -> List[Dict]:
 # Main
 # ---------------------------------------------------------------------------
 def main() -> None:
-    parser = base_argparser("VaultScan — Subdomain Enumeration Scanner")
+    parser = base_argparser("Viper — Subdomain Enumeration Scanner")
     args = parser.parse_args()
 
     target = normalize_url(args.target)

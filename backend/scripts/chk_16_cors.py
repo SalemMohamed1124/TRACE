@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-VaultScan — CORS Misconfiguration Scanner
+Viper — CORS Misconfiguration Scanner
 ==========================================
 Deep Cross-Origin Resource Sharing (CORS) misconfiguration testing:
   1. Origin reflection (server reflects back any origin)
@@ -672,7 +672,7 @@ def get_mock_findings(target: str) -> List[Dict]:
 # Main
 # ---------------------------------------------------------------------------
 def main() -> None:
-    parser = base_argparser("VaultScan — CORS Misconfiguration Scanner")
+    parser = base_argparser("Viper — CORS Misconfiguration Scanner")
     args = parser.parse_args()
 
     target = normalize_url(args.target)

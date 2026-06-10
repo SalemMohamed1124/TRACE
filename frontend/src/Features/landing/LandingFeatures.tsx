@@ -22,7 +22,7 @@ export function LandingFeatures() {
             </span>
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            From automated scanning to AI-powered analysis, VaultScan gives you
+            From automated scanning to AI-powered analysis, TRACE gives you
             the tools to identify, prioritize, and fix vulnerabilities across
             your entire attack surface.
           </p>

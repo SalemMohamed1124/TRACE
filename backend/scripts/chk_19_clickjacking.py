@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-VaultScan — Clickjacking / Frame Protection Scanner
+Viper — Clickjacking / Frame Protection Scanner
 =====================================================
 Checks for clickjacking vulnerabilities by analysing frame-protection headers:
   1. X-Frame-Options header (DENY, SAMEORIGIN, ALLOW-FROM)
@@ -415,7 +415,7 @@ def get_mock_findings(target: str) -> List[Dict]:
 # Main
 # ---------------------------------------------------------------------------
 def main() -> None:
-    parser = base_argparser("VaultScan — Clickjacking / Frame Protection Scanner")
+    parser = base_argparser("Viper — Clickjacking / Frame Protection Scanner")
     args = parser.parse_args()
 
     target = normalize_url(args.target)

@@ -22,7 +22,7 @@ async function bootstrap() {
 
   // Swagger API docs
   const config = new DocumentBuilder()
-    .setTitle('VaultScan API')
+    .setTitle('TRACE API')
     .setDescription('AI-Powered Vulnerability Scanner API')
     .setVersion('1.0')
     .addBearerAuth()
@@ -34,7 +34,7 @@ async function bootstrap() {
   const port = process.env.PORT || 3001;
   const host = process.env.HOST || "localhost";
   await app.listen(port, host);
-  console.log(`VaultScan API running on http://localhost:${port}`);
+  console.log(`TRACE API running on http://localhost:${port}`);
   console.log(`Swagger docs at http://localhost:${port}/api/docs`);
 }
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-VaultScan — HTTP Request Smuggling Detection Scanner
+Viper — HTTP Request Smuggling Detection Scanner
 =====================================================
 Detects CL.TE and TE.CL desynchronization vulnerabilities using
 timing-based raw-socket probes.  Also tests TE.TE obfuscation vectors.
@@ -404,7 +404,7 @@ def get_mock_findings(target: str) -> List[Dict]:
 # Main
 # ---------------------------------------------------------------------------
 def main() -> None:
-    parser = base_argparser("VaultScan — HTTP Request Smuggling Detection Scanner")
+    parser = base_argparser("Viper — HTTP Request Smuggling Detection Scanner")
     args = parser.parse_args()
 
     target = normalize_url(args.target)

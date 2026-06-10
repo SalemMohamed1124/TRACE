@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-VaultScan -- WebSocket Security Scanner
+Viper -- WebSocket Security Scanner
 =========================================
 Tests for WebSocket security issues:
 - Unencrypted WebSocket (ws:// instead of wss://)
@@ -226,7 +226,7 @@ def get_mock_findings(target: str) -> List[Dict]:
 
 
 def main():
-    parser = base_argparser("VaultScan WebSocket Security Scanner")
+    parser = base_argparser("Viper WebSocket Security Scanner")
     args = parser.parse_args()
     target = normalize_url(args.target)
 

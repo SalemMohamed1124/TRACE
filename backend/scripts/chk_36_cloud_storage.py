@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-VaultScan -- Cloud Storage Misconfiguration Scanner
+Viper -- Cloud Storage Misconfiguration Scanner
 =====================================================
 Detects exposed cloud storage buckets (S3, GCS, Azure Blob),
 tests for public access, directory listing, upload permissions,
@@ -208,8 +208,8 @@ def test_listing_enabled(session, cloud_ref: Dict, timeout: int) -> Dict | None:
 def test_upload_allowed(session, cloud_ref: Dict, timeout: int) -> Dict | None:
     """Test if upload (PUT) is allowed on the bucket/container."""
     provider = cloud_ref["provider"]
-    test_key = "vaultscan-upload-test.txt"
-    test_content = b"VaultScan security test - safe to delete"
+    test_key = "viper-upload-test.txt"
+    test_content = b"Viper security test - safe to delete"
 
     if provider == "AWS S3":
         bucket = cloud_ref["bucket"]
@@ -516,7 +516,7 @@ def get_mock_findings(target: str) -> List[Dict]:
 # ---------------------------------------------------------------------------
 
 def main():
-    parser = base_argparser("VaultScan Cloud Storage Misconfiguration Scanner")
+    parser = base_argparser("Viper Cloud Storage Misconfiguration Scanner")
     args = parser.parse_args()
     target = normalize_url(args.target)
 

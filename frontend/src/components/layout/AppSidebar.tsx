@@ -329,8 +329,9 @@ function SidebarFooter() {
                       <p className="truncate text-xs font-semibold text-foreground">{org.name}</p>
                       <p className="truncate text-[10px] text-muted-foreground">{org.role}</p>
                     </div>
-                    <RadioGroupItem id={`org-${org.id}`} value={org.id} className="peer sr-only" />
-                    <Check className="size-3.5 text-primary opacity-0 peer-data-[state=checked]:opacity-100" />
+                    {activeOrgId === org.id && (
+                      <Check className="size-3.5 text-primary shrink-0" />
+                    )}
                   </label>
                 </DropdownMenuItem>
               ))}

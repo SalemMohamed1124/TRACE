@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-VaultScan — Directory Listing Detection
+Viper — Directory Listing Detection
 =========================================
 Detects directory listing vulnerabilities by checking:
   1. Root and common directories for directory listing indicators
@@ -454,7 +454,7 @@ def get_mock_findings(target: str) -> List[Dict]:
 # Main
 # ---------------------------------------------------------------------------
 def main() -> None:
-    parser = base_argparser("VaultScan — Directory Listing Detection")
+    parser = base_argparser("Viper — Directory Listing Detection")
     args = parser.parse_args()
 
     target = normalize_url(args.target)

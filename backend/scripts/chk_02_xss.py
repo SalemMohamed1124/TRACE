@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-VaultScan — Comprehensive XSS (Cross-Site Scripting) Scanner
+Viper — Comprehensive XSS (Cross-Site Scripting) Scanner
 Detects reflected XSS, DOM-based XSS hints, and CSP weaknesses.
 Tests URL parameters, form inputs, and crawled pages.
 Outputs JSON array of findings to stdout.
@@ -763,7 +763,7 @@ def get_mock_findings(target: str) -> List[Dict]:
 # Main entry point
 # ---------------------------------------------------------------------------
 def main() -> None:
-    parser = base_argparser("VaultScan — Comprehensive XSS Scanner")
+    parser = base_argparser("Viper — Comprehensive XSS Scanner")
     args = parser.parse_args()
 
     # ---- Mock mode --------------------------------------------------------

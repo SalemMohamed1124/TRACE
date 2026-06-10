@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-VaultScan -- Insecure Deserialization Scanner
+Viper -- Insecure Deserialization Scanner
 ==============================================
 Detects serialized data in cookies, headers, and responses that may indicate
 insecure deserialization vulnerabilities across Java, PHP, Python, and .NET.
@@ -520,7 +520,7 @@ def check_deserialization_indicators(session, urls: List[str], timeout: int) -> 
 
 XML_DESER_PAYLOADS = [
     (
-        '<?xml version="1.0"?><test>vaultscan_deser_probe</test>',
+        '<?xml version="1.0"?><test>viper_deser_probe</test>',
         "text/xml",
     ),
     (
@@ -558,7 +558,7 @@ def check_xml_deserialization(session, url: str, timeout: int) -> List[Dict]:
                 "xml" in content_type_resp
                 or "<?xml" in body
                 or "<methodResponse" in body
-                or "vaultscan_deser_probe" in body
+                or "viper_deser_probe" in body
             )
 
             if xml_processed:
@@ -627,7 +627,7 @@ def get_mock_findings(target: str) -> List[Dict]:
 # --------------------------------------------------------------------------
 
 def main():
-    parser = base_argparser("VaultScan Insecure Deserialization Scanner")
+    parser = base_argparser("Viper Insecure Deserialization Scanner")
     args = parser.parse_args()
     target = normalize_url(args.target)
 

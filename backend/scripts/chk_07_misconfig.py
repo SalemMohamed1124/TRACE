@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-VaultScan — Security Misconfiguration Scanner
+Viper — Security Misconfiguration Scanner
 ===============================================
 Comprehensive scanner that checks for:
   1. Exposed admin panels and management interfaces (45+ paths)
@@ -632,7 +632,7 @@ def check_debug_mode(
                 ))
 
     # 4c: Framework-specific debug page detection on error trigger
-    error_url = target + "/__vaultscan_debug_trigger_nonexistent"
+    error_url = target + "/__viper_debug_trigger_nonexistent"
     resp, err = rate_limited_request(
         session, "GET", error_url, delay=delay, timeout=timeout,
     )
@@ -825,7 +825,7 @@ def get_mock_findings(target: str) -> List[Dict]:
 # Main
 # ---------------------------------------------------------------------------
 def main() -> None:
-    parser = base_argparser("VaultScan — Security Misconfiguration Scanner")
+    parser = base_argparser("Viper — Security Misconfiguration Scanner")
     args = parser.parse_args()
 
     target = normalize_url(args.target)

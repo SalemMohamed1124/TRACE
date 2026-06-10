@@ -226,7 +226,7 @@ export class ReportsService {
     };
 
     const ext = report.format === ReportFormat.PDF ? 'pdf' : report.format === ReportFormat.JSON ? 'json' : 'html';
-    const filename = `vaultscan-report-${reportId}.${ext}`;
+    const filename = `trace-report-${reportId}.${ext}`;
 
     return {
       buffer,
