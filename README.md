@@ -1,4 +1,4 @@
-# Viper
+# Trace
 
 > AI-Powered Vulnerability Scanner — Graduation Project
 > Damietta University, Faculty of Computers & AI
