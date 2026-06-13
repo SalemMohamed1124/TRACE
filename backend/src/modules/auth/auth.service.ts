@@ -9,9 +9,11 @@ import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
+import * as crypto from 'crypto';
 import { User } from '../users/user.entity.js';
 import { Organization } from '../organizations/organization.entity.js';
 import { OrganizationMember } from '../organizations/organization-member.entity.js';
+import { EmailService } from '../email/email.service.js';
 import { UserRole } from '../../common/enums/index.js';
 import { RegisterDto } from './dto/register.dto.js';
 import { LoginDto } from './dto/login.dto.js';
@@ -54,6 +56,7 @@ export class AuthService {
     private readonly memberRepo: Repository<OrganizationMember>,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly emailService: EmailService,
   ) {
     const refreshSecret = this.configService.get<string>('JWT_REFRESH_SECRET');
     if (!refreshSecret) {
@@ -209,6 +212,47 @@ export class AuthService {
     }
 
     user.passwordHash = await bcrypt.hash(newPassword, 12);
+    await this.userRepo.save(user);
+
+    return { success: true };
+  }
+
+  async requestPasswordReset(email: string): Promise<{ success: boolean }> {
+    const user = await this.userRepo.findOne({ where: { email } });
+    if (!user) {
+      // Return success even if user not found to prevent email enumeration
+      return { success: true };
+    }
+
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const tokenHash = crypto.createHash('sha256').update(resetToken).digest('hex');
+    
+    // Set expiry to 1 hour from now
+    const expires = new Date();
+    expires.setHours(expires.getHours() + 1);
+
+    user.passwordResetToken = tokenHash;
+    user.passwordResetExpires = expires;
+    await this.userRepo.save(user);
+
+    await this.emailService.sendPasswordResetEmail(user.email, resetToken);
+
+    return { success: true };
+  }
+
+  async resetPassword(token: string, newPassword: string): Promise<{ success: boolean }> {
+    const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+    const user = await this.userRepo.findOne({
+      where: { passwordResetToken: tokenHash },
+    });
+
+    if (!user || !user.passwordResetExpires || user.passwordResetExpires < new Date()) {
+      throw new BadRequestException('Invalid or expired password reset token');
+    }
+
+    user.passwordHash = await bcrypt.hash(newPassword, 12);
+    user.passwordResetToken = null;
+    user.passwordResetExpires = null;
     await this.userRepo.save(user);
 
     return { success: true };

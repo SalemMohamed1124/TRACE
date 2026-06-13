@@ -79,7 +79,7 @@ export class PdfGeneratorService {
       const template = fs.readFileSync(templatePath, 'utf-8');
       const html = this.renderTemplate(template, data);
 
-      await page.setContent(html, { waitUntil: 'networkidle0' });
+      await page.setContent(html, { waitUntil: 'networkidle0' as any });
 
       const pdf = await page.pdf({
         format: 'A4',

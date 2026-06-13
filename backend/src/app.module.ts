@@ -20,6 +20,7 @@ import { ReportsModule } from './modules/reports/reports.module.js';
 import { NotificationsModule } from './modules/notifications/notifications.module.js';
 import { ScanEngineModule } from './modules/scan-engine/scan-engine.module.js';
 import { DashboardModule } from './modules/dashboard/dashboard.module.js';
+import { EmailModule } from './modules/email/email.module.js';
 import { OrganizationMember } from './modules/organizations/organization-member.entity.js';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard.js';
 import { OrgContextGuard } from './common/guards/org-context.guard.js';
@@ -47,6 +48,7 @@ import { RolesGuard } from './common/guards/roles.guard.js';
     NotificationsModule,
     ScanEngineModule,
     DashboardModule,
+    EmailModule,
   ],
   controllers: [AppController],
   providers: [
