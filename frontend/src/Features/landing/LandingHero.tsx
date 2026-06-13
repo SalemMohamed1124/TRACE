@@ -90,7 +90,7 @@ export function LandingHero() {
             Trusted by security teams worldwide
           </p>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-4 divide-x-0 md:divide-x divide-border/50 border-y border-border/50 py-8 bg-muted/10 backdrop-blur-sm rounded-2xl">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-4 divide-x-0 md:divide-x divide-border/50 border-y border-border/50 py-8 bg-muted/10 backdrop-blur-sm ">
             {stats.map((stat, i) => {
               const isUptime = stat.label === "Uptime SLA";
               const isTime = stat.label === "Quick Scan Time";
