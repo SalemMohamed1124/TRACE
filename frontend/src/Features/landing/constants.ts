@@ -25,7 +25,7 @@ export const features = [
   },
   {
     icon: ShieldCheck,
-    title: "20+ Security Checks",
+    title: "40+ Security Checks",
     description:
       "Comprehensive scanning: SQL injection, XSS, CSRF, SSRF, IDOR, command injection, HTTP smuggling, and more.",
     gradient: "from-blue-500 to-cyan-500",
@@ -59,7 +59,7 @@ export const features = [
     icon: FileText,
     title: "Automated Reports",
     description:
-      "Generate professional PDF and JSON reports with executive summaries, technical details, and compliance mappings.",
+      "Export professional PDF, JSON, and HTML reports with executive summaries, technical findings, and step-by-step remediation details.",
     gradient: "from-rose-500 to-pink-500",
     glow: "rose",
   },
@@ -85,9 +85,10 @@ export const scanTypes = [
     name: "Deep Scan",
     time: "~10 min",
     description:
-      "Full OWASP Top 10 coverage with 20 specialized security scripts.",
+      "Full OWASP Top 10+ coverage with 40+ specialized security scripts.",
     checks: [
       "SQL Injection",
+      "NoSQL Injection",
       "XSS",
       "CSRF",
       "SSRF",
@@ -98,16 +99,28 @@ export const scanTypes = [
       "HTTP Smuggling",
       "Open Redirect",
       "LFI",
-      "Subdomain Enumeration",
+      "LDAP Injection",
+      "Deserialization",
+      "CORS Misconfiguration",
+      "JWT Vulnerabilities",
+      "Broken Auth",
+      "GraphQL Security",
+      "Clickjacking",
+      "Prototype Pollution",
+      "Host Header Injection",
+      "Cookie Security",
+      "WAF Detection",
+      "Subdomain Takeover",
+      "+more",
     ],
   },
 ];
 
 export const stats = [
-  { value: "20+", label: "Security Scripts" },
-  { value: "15+", label: "Vulnerability Categories" },
+  { value: "40+", label: "Security Scripts" },
+  { value: "25+", label: "Vulnerability Categories" },
   { value: "99.9%", label: "Uptime SLA" },
-  { value: "<5min", label: "Quick Scan Time" },
+  { value: "<2min", label: "Quick Scan Time" },
 ];
 
 export const steps = [
@@ -122,7 +135,7 @@ export const steps = [
     step: "02",
     title: "Launch a Scan",
     description:
-      "Choose Quick or Deep scan. Watch real-time progress as 20+ security scripts analyze your attack surface.",
+      "Choose Quick or Deep scan. Watch real-time progress as 40+ security scripts analyze your attack surface.",
     icon: Search,
   },
   {

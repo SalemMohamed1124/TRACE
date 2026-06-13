@@ -1,0 +1,115 @@
+@startuml SD-01_User_Registration
+
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Arial"
+skinparam defaultFontSize 17
+skinparam sequenceMessageAlign center
+skinparam monochrome true
+skinparam shadowing false
+skinparam dpi 300
+
+skinparam participant {
+    BackgroundColor #FFFFFF
+    BorderColor #555555
+    BorderThickness 1
+    FontColor #000000
+    FontStyle plain
+}
+
+skinparam actor {
+    BackgroundColor #FFFFFF
+    BorderColor #555555
+    BorderThickness 1
+    FontColor #000000
+}
+
+skinparam sequence {
+    ArrowColor #333333
+    ArrowThickness 1
+    ArrowFontColor #000000
+    ArrowFontSize 16
+    LifeLineBorderColor #333333
+    LifeLineBorderThickness 1
+    LifeLineBackgroundColor #FFFFFF
+    GroupBodyBackgroundColor #F8F8F8
+    GroupBorderColor #888888
+    GroupBorderThickness 1
+    GroupHeaderFontColor #000000
+    DividerBackgroundColor #E8E8E8
+    DividerFontColor #000000
+    DividerBorderColor #AAAAAA
+    DividerBorderThickness 1
+    BoxBorderColor #888888
+    BoxBorderThickness 1
+    ParticipantBorderThickness 1
+}
+
+skinparam note {
+    BackgroundColor #FAFAFA
+    BorderColor #999999
+    BorderThickness 1
+    FontColor #000000
+}
+
+' ─── Participants ───────────────────────────────────────
+actor       "User"              as User
+participant "Web UI"            as UI
+participant "Auth Controller"   as Ctrl
+participant "Auth Service"      as Svc
+database    "Database"          as DB
+
+' ════════════════════════════════════════════════════════
+== Form Submission ==
+' ════════════════════════════════════════════════════════
+
+User -> UI  : Fill in name, email, password\nClick "Create Account"
+UI   -> UI  : Validate fields (Zod schema)
+
+alt Validation fails
+    UI --> User : Show inline field errors
+end
+
+UI -> Ctrl : POST /auth/register\n{ name, email, password }
+
+' ════════════════════════════════════════════════════════
+== Registration Logic ==
+' ════════════════════════════════════════════════════════
+
+Ctrl -> Svc : register(dto)
+activate Svc
+
+Svc -> DB : findOne({ email })
+activate DB
+DB --> Svc : result
+deactivate DB
+
+alt Email already registered
+    Svc --> Ctrl : 409 Conflict
+    Ctrl --> UI  : 409 Email already registered
+    UI  --> User : Show error message
+end
+
+Svc -> Svc : bcrypt.hash(password)
+Svc -> DB  : save(User)
+activate DB
+DB --> Svc : savedUser { id, name, email }
+deactivate DB
+
+Svc -> DB  : save(Organization)\nsave(OrganizationMember, role: ADMIN)
+activate DB
+DB --> Svc : savedOrg, savedMember
+deactivate DB
+
+Svc -> Svc : Sign accessToken + refreshToken (JWT)
+
+Svc --> Ctrl : AuthResponse\n{ accessToken, refreshToken, user }
+deactivate Svc
+
+' ════════════════════════════════════════════════════════
+== Success ==
+' ════════════════════════════════════════════════════════
+
+Ctrl --> UI   : 201 Created + AuthResponse
+UI   --> User : Toast "Account created!"\nRedirect to /overview
+
+@enduml

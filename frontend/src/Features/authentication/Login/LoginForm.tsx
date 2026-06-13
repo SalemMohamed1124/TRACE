@@ -17,7 +17,7 @@ export function LoginForm() {
     <div className="w-full max-w-[420px] mx-auto animate-fade-in-up px-4 sm:px-0">
       {/* Brand Header - Hidden on desktop in split layout */}
       <Link href="/" className="flex lg:hidden items-center gap-3 mb-8 group cursor-pointer w-fit mx-auto transition-transform active:scale-95 focus:outline-none">
-        <TraceLogo nameClassName="text-2xl font-bold tracking-tight group-hover:text-primary transition-colors" />
+        <TraceLogo iconClassName="size-8" nameClassName="text-2xl font-black tracking-tight" />
       </Link>
 
       <div className="w-full">

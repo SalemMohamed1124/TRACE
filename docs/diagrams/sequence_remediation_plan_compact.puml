@@ -1,0 +1,73 @@
+@startuml SD-11_Remediation_Plan
+
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Arial"
+skinparam defaultFontSize 17
+skinparam sequenceMessageAlign center
+skinparam monochrome true
+skinparam shadowing false
+skinparam dpi 300
+
+skinparam participant {
+    BackgroundColor #FFFFFF
+    BorderColor #555555
+    BorderThickness 1
+    FontColor #000000
+    FontStyle plain
+}
+skinparam actor {
+    BackgroundColor #FFFFFF
+    BorderColor #555555
+    BorderThickness 1
+    FontColor #000000
+}
+skinparam sequence {
+    ArrowColor #333333
+    ArrowThickness 1
+    ArrowFontColor #000000
+    ArrowFontSize 16
+    LifeLineBorderColor #333333
+    LifeLineBorderThickness 1
+    LifeLineBackgroundColor #FFFFFF
+    GroupBodyBackgroundColor #F8F8F8
+    GroupBorderColor #888888
+    GroupBorderThickness 1
+    GroupHeaderFontColor #000000
+    DividerBackgroundColor #E8E8E8
+    DividerFontColor #000000
+    DividerBorderColor #AAAAAA
+    DividerBorderThickness 1
+    ParticipantBorderThickness 1
+}
+skinparam note {
+    BackgroundColor #FAFAFA
+    BorderColor #999999
+    BorderThickness 1
+    FontColor #000000
+}
+
+actor       "User"            as User
+participant "Web\nUI"         as UI
+participant "Insights\nBackend" as Back
+participant "Gemini\nAPI"     as Gemini
+database    "DB"              as DB
+
+== Remediation Guide Generation ==
+
+User -> UI   : Click "Get Remediation Guide"\non a finding
+UI   -> Back : GET /api/ai/remediation/:findingId
+
+Back -> DB   : find Finding + Scan + Asset\n(verify org ownership)
+DB  --> Back : context data
+
+Back -> Back : Build prompt:\n"Generate detailed remediation for:\nVuln: [name], Severity: [sev],\nTarget: [asset.value]"
+
+Back -> Gemini : generateContent(prompt)\n[temp: 0.2, maxTokens: 4096]
+Gemini --> Back : JSON remediation guide
+
+Back -> Back : parseJson(response)\n→ { title, steps[],\nverification, references[] }
+
+Back --> UI  : 200 OK (remediation guide)
+UI  --> User : Display step-by-step guide\nwith code examples
+
+@enduml

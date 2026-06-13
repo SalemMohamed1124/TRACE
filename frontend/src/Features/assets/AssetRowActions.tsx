@@ -7,7 +7,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Eye, Copy, Trash, Pencil } from "lucide-react";
+import { MoreHorizontal, Eye, Copy, Trash, Pencil, Play } from "lucide-react";
 
 import type { Asset } from "@/types";
 import { useSidebar } from "@/components/ui/sidebar";
@@ -16,6 +16,7 @@ import { useViewModal } from "@/Contexts/ViewModalContext";
 import AssetDetailView from "@/Features/assets/AssetDetailView";
 import { useDeleteAsset } from "@/Features/assets/useAssetMutations";
 import { useAssetFormModals } from "@/Features/assets/useAssetFormModals";
+import { useScanFormModals } from "@/Features/scans/useScanFormModals";
 import { toast } from "sonner";
 
 const toClipboard = (text: string, message?: string) => {
@@ -33,6 +34,7 @@ function AssetRowActions({ asset }: AssetRowActionsProps) {
   const { view } = useViewModal();
   const { mutateAsync: deleteAsset } = useDeleteAsset();
   const { openEdit } = useAssetFormModals();
+  const { openCreate } = useScanFormModals();
 
   function handleShowMore() {
     view({
@@ -43,6 +45,10 @@ function AssetRowActions({ asset }: AssetRowActionsProps) {
 
   function handleEdit() {
     openEdit(asset);
+  }
+
+  function handleStartScan() {
+    openCreate(asset.id);
   }
 
   const handleDelete = () => {
@@ -60,20 +66,46 @@ function AssetRowActions({ asset }: AssetRowActionsProps) {
   if (isMobile)
     return (
       <div className="grid grid-cols-2 gap-2 w-full">
-        <Button variant={"outline"} onClick={handleShowMore} className="w-full text-xs">
-          <Eye className="size-3.5" />
-          Show More
+        <Button
+          variant={"primary"}
+          onClick={handleStartScan}
+          className="w-full text-xs font-semibold"
+        >
+          <Play className="size-3.5 mr-1" />
+          Start Scan
         </Button>
-        <Button variant={"outline"} onClick={handleEdit} className="w-full text-xs">
-          <Pencil className="size-3.5" />
+        <Button
+          variant={"outline"}
+          onClick={handleEdit}
+          className="w-full text-xs"
+        >
+          <Pencil className="size-3.5 mr-1" />
           Edit
         </Button>
-        <Button variant={"outline"} onClick={() => toClipboard(asset.value, "Asset value copied")} className="w-full text-xs">
-          <Copy className="size-3.5" />
+
+        <Button
+          variant={"outline"}
+          onClick={handleShowMore}
+          className="w-full text-xs"
+        >
+          <Eye className="size-3.5 mr-1" />
+          Details
+        </Button>
+
+        <Button
+          variant={"outline"}
+          onClick={() => toClipboard(asset.value, "Asset value copied")}
+          className="w-full text-xs"
+        >
+          <Copy className="size-3.5 mr-1" />
           Copy
         </Button>
-        <Button variant={"destructive"} onClick={handleDelete} className="w-full text-xs">
-          <Trash className="size-3.5" />
+        <Button
+          variant={"destructive"}
+          onClick={handleDelete}
+          className="text-xs col-span-2 w-full"
+        >
+          <Trash className="size-3.5 mr-1" />
           Delete
         </Button>
       </div>
@@ -88,11 +120,22 @@ function AssetRowActions({ asset }: AssetRowActionsProps) {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuLabel>Actions</DropdownMenuLabel>
-        <DropdownMenuItem onClick={() => toClipboard(asset.value, "Asset value copied to clipboard")}>
+        <DropdownMenuItem
+          onClick={handleStartScan}
+          className="font-medium text-primary focus:text-primary focus:bg-primary/10"
+        >
+          <Play className="mr-2 h-4 w-4" />
+          Start Scan
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          onClick={() =>
+            toClipboard(asset.value, "Asset value copied to clipboard")
+          }
+        >
           <Copy className="mr-2 h-4 w-4" />
           Copy Value
         </DropdownMenuItem>
-        <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleShowMore}>
           <Eye className="mr-2 h-4 w-4" />
           Show Details
@@ -101,7 +144,10 @@ function AssetRowActions({ asset }: AssetRowActionsProps) {
           <Pencil className="mr-2 h-4 w-4" />
           Edit Asset
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={handleDelete} className="text-destructive focus:text-destructive">
+        <DropdownMenuItem
+          onClick={handleDelete}
+          className="text-destructive focus:text-destructive"
+        >
           <Trash className="mr-2 h-4 w-4" />
           Delete Asset
         </DropdownMenuItem>

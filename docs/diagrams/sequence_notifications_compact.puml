@@ -1,0 +1,113 @@
+@startuml SD-08_Notifications
+
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Arial"
+skinparam defaultFontSize 17
+skinparam sequenceMessageAlign center
+skinparam monochrome true
+skinparam shadowing false
+skinparam dpi 300
+
+skinparam participant {
+    BackgroundColor #FFFFFF
+    BorderColor #555555
+    BorderThickness 1
+    FontColor #000000
+    FontStyle plain
+}
+skinparam actor {
+    BackgroundColor #FFFFFF
+    BorderColor #555555
+    BorderThickness 1
+    FontColor #000000
+}
+skinparam sequence {
+    ArrowColor #333333
+    ArrowThickness 1
+    ArrowFontColor #000000
+    ArrowFontSize 16
+    LifeLineBorderColor #333333
+    LifeLineBorderThickness 1
+    LifeLineBackgroundColor #FFFFFF
+    GroupBodyBackgroundColor #F8F8F8
+    GroupBorderColor #888888
+    GroupBorderThickness 1
+    GroupHeaderFontColor #000000
+    DividerBackgroundColor #E8E8E8
+    DividerFontColor #000000
+    DividerBorderColor #AAAAAA
+    DividerBorderThickness 1
+    ParticipantBorderThickness 1
+}
+skinparam note {
+    BackgroundColor #FAFAFA
+    BorderColor #999999
+    BorderThickness 1
+    FontColor #000000
+}
+
+actor       "User"         as User
+participant "Web\nUI"      as UI
+participant "Notif.\nController" as Ctrl
+participant "Notif.\nService"    as Svc
+participant "Event\nSystem"      as Events
+database    "DB"           as DB
+
+' ═════════════════════════════════════════════════════════
+== Creation (Event-Driven) ==
+' ═════════════════════════════════════════════════════════
+
+note over Events, DB
+  [Planned] When scan/AI completes,
+  an event listener creates a
+  Notification record in DB.
+end note
+
+Events -> Svc  : on("scan.completed")
+Svc  -> DB  : save(Notification { type: SCAN })
+DB  --> Svc  : saved
+
+Events -> Svc  : on("ai.analysis.completed")
+Svc  -> DB  : save(Notification { type: AI })
+DB  --> Svc  : saved
+
+' ═════════════════════════════════════════════════════════
+== Fetch Notifications ==
+' ═════════════════════════════════════════════════════════
+
+User -> UI   : Open panel
+UI   -> Ctrl : GET /api/notifications
+Ctrl -> Svc  : findAll()
+Svc  -> DB  : find() order by date
+DB  --> Svc  : notifications[]
+Svc --> Ctrl : notifications[]
+Ctrl --> UI  : 200 OK
+UI  --> User : Show list & badge
+
+' ═══════════════════════════════════════════
+== Mark Single as Read ==
+' ═══════════════════════════════════════════
+
+User -> UI   : Click notification
+UI   -> Ctrl : PATCH /.../:id/read
+Ctrl -> Svc  : markAsRead(id)
+Svc  -> DB  : save({ isRead: true })
+DB  --> Svc  : updated
+Svc --> Ctrl : notification
+Ctrl --> UI  : 200 OK
+UI  --> User : Item marked read
+
+' ═════════════════════════════════════════════════════════
+== Mark All as Read ==
+' ═════════════════════════════════════════════════════════
+
+User -> UI   : Click "Mark all as read"
+UI   -> Ctrl : PATCH /.../read-all
+Ctrl -> Svc  : markAllAsRead()
+Svc  -> DB  : update(isRead = true)
+DB  --> Svc  : rows affected
+Svc --> Ctrl : { success: true }
+Ctrl --> UI  : 200 OK
+UI  --> User : Badge cleared
+
+@enduml

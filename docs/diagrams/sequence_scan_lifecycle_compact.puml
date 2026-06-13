@@ -1,0 +1,175 @@
+@startuml SD-03_Scan_Lifecycle
+
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Arial"
+skinparam defaultFontSize 17
+skinparam sequenceMessageAlign center
+skinparam monochrome true
+skinparam shadowing false
+skinparam dpi 300
+
+
+skinparam participant {
+    BackgroundColor #FFFFFF
+    BorderColor #555555
+    BorderThickness 1
+    FontColor #000000
+    FontStyle plain
+}
+
+skinparam actor {
+    BackgroundColor #FFFFFF
+    BorderColor #555555
+    BorderThickness 1
+    FontColor #000000
+}
+
+skinparam sequence {
+    ArrowColor #333333
+    ArrowThickness 1
+    ArrowFontColor #000000
+    ArrowFontSize 16
+    LifeLineBorderColor #333333
+    LifeLineBorderThickness 1
+    LifeLineBackgroundColor #FFFFFF
+    GroupBodyBackgroundColor #F8F8F8
+    GroupBorderColor #888888
+    GroupBorderThickness 1
+    GroupHeaderFontColor #000000
+    DividerBackgroundColor #E8E8E8
+    DividerFontColor #000000
+    DividerBorderColor #AAAAAA
+    DividerBorderThickness 1
+    ParticipantBorderThickness 1
+}
+
+skinparam note {
+    BackgroundColor #FAFAFA
+    BorderColor #999999
+    BorderThickness 1
+    FontColor #000000
+}
+
+' ─── Participants ────────────────────────────────────────
+actor       "User"          as User
+participant "Web UI"        as UI
+participant "Scan API"      as API
+participant "Scan Processor\n(BullMQ)" as Proc
+participant "Orchestrator"  as Orch
+participant "Script Runner" as Runner
+database    "Database"      as DB
+
+' ═════════════════════════════════════════════════════════
+== Initiation ==
+' ═════════════════════════════════════════════════════════
+
+User -> UI  : Select asset, scan type\nClick "Start Scan"
+UI   -> API : POST /api/scans { assetId, scanType, cookies? }
+activate API
+API  -> DB  : save(Scan, status: PENDING)
+activate DB
+DB  --> API : scanId
+deactivate DB
+API  -> Proc : Enqueue job (BullMQ)
+API --> UI   : 201 Created { scanId }
+deactivate API
+UI   -> API  : GET /scans/:id/progress?token=JWT\n(SSE EventSource)
+
+' ═════════════════════════════════════════════════════════
+== Job Processing ==
+' ═════════════════════════════════════════════════════════
+
+activate Proc
+Proc -> DB : findOne(scanId) — verify PENDING
+activate DB
+DB --> Proc : scan record
+deactivate DB
+Proc -> DB : update(Scan, status: RUNNING)
+
+activate Orch
+
+alt Quick Scan (scanType = QUICK)
+    Proc -> Orch : runQuickScan(jobData)
+
+    Orch -> Runner : Phase 0 (0-10%): Auth Discovery
+    activate Runner
+    Runner --> Orch : session cookies (if found)
+    deactivate Runner
+
+    Orch -> Runner : Phase 1 (10-30%): Infrastructure\n(chk_quick, SSL, cookies, clickjacking — parallel)
+    activate Runner
+    Runner --> Orch : raw findings
+    deactivate Runner
+
+    Orch -> Runner : Phase 2 (30-70%): Vulnerability Testing\n(SQLi, XSS, CSRF, info_disclosure — parallel)
+    activate Runner
+    Runner --> Orch : raw findings
+    deactivate Runner
+
+    Orch -> Runner : Phase 3 (70-90%): WAF & Rate Limiting
+    activate Runner
+    Runner --> Orch : raw findings
+    deactivate Runner
+
+else Deep Scan (scanType = DEEP)
+    Proc -> Orch : runDeepScan(jobData)
+
+    Orch -> Runner : Phase 0 (0-3%): Auth Discovery
+    activate Runner
+    Runner --> Orch : session cookies (if found)
+    deactivate Runner
+
+    Orch -> Runner : Phase 1 (3-12%): Port Scan & Fingerprinting\n(nmap, service_fingerprint — sequential)
+    activate Runner
+    Runner --> Orch : open ports, service banners
+    deactivate Runner
+
+    Orch -> Runner : Phase 1.5 (12-25%): DNS Reconnaissance\n(subdomain enum, DNS config — parallel)
+    activate Runner
+    Runner --> Orch : raw findings
+    deactivate Runner
+
+    Orch -> Runner : Phase 2a (25-45%): Injection Testing\n(SQLi, XSS, CMDi, SSTI, XXE — parallel)
+    activate Runner
+    Runner --> Orch : raw findings
+    deactivate Runner
+
+    Orch -> Runner : Phase 2b (45-60%): Access Control\n(CSRF, open redirect, LFI, IDOR, SSRF — parallel)
+    activate Runner
+    Runner --> Orch : raw findings
+    deactivate Runner
+
+    Orch -> Runner : Phase 2c (60-70%): Protocol & Header Attacks\n(CORS, CRLF, host header, JWT, WebSocket... — parallel)
+    activate Runner
+    Runner --> Orch : raw findings
+    deactivate Runner
+
+    Orch -> Runner : Phase 3 (70-90%): Config & Data Exposure\n(misconfig, sensitive data, SSL/TLS — parallel)
+    activate Runner
+    Runner --> Orch : raw findings
+    deactivate Runner
+
+end
+
+note right of Orch : After each phase,\nprogress % is pushed\nto the SSE stream
+
+' ═════════════════════════════════════════════════════════
+== Completion ==
+' ═════════════════════════════════════════════════════════
+
+Orch -> Orch : Aggregate & deduplicate findings
+Orch -> DB   : save(Findings[])
+Orch -> DB   : update(Scan, status: COMPLETED)
+deactivate Orch
+deactivate Proc
+
+API --> UI   : SSE "complete" event (100%)
+UI  --> User : Display findings & vulnerabilities
+
+alt Scan Failed
+    Proc -> DB  : update(Scan, status: FAILED)
+    API  --> UI : SSE "complete" event (-1%)
+    UI  --> User : Show failure message
+end
+
+@enduml

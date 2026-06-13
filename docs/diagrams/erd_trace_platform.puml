@@ -1,0 +1,208 @@
+@startuml ERD_TRACE_Platform
+
+skinparam backgroundColor #FAFBFC
+skinparam defaultFontName "Arial"
+skinparam defaultFontSize 12
+skinparam shadowing false
+skinparam dpi 300
+skinparam linetype ortho
+skinparam classAttributeIconSize 0
+
+skinparam class {
+    BackgroundColor #FFFFFF
+    BorderColor #C5D8EA
+    BorderThickness 1
+    FontColor #1A1A2E
+    FontSize 12
+    AttributeFontColor #374151
+    AttributeFontSize 12
+    HeaderBackgroundColor #4A7FB5
+    HeaderFontColor #FFFFFF
+    HeaderFontSize 13
+    HeaderFontStyle bold
+}
+
+skinparam arrow {
+    Color #7BA7CC
+    Thickness 1
+    FontColor #4A7FB5
+    FontSize 10
+}
+
+' ════════════════════════
+' COLUMN 1
+' ════════════════════════
+
+entity "users" as User {
+    🔑 id            | uuid
+    --
+    name             | varchar
+    email            | varchar  <<unique>>
+    password_hash    | varchar
+    created_at       | timestamp
+}
+
+entity "organization_members" as OrgMember {
+    🔑 id            | uuid
+    --
+    🔗 user_id       | uuid
+    🔗 org_id        | uuid
+    role             | enum
+    joined_at        | timestamp
+}
+
+entity "notifications" as Notif {
+    🔑 id            | uuid
+    --
+    🔗 user_id       | uuid
+    type             | enum
+    message          | text
+    is_read          | bool
+    metadata         | jsonb
+    created_at       | timestamp
+}
+
+' ════════════════════════
+' COLUMN 2
+' ════════════════════════
+
+entity "organizations" as Org {
+    🔑 id            | uuid
+    --
+    name             | varchar
+    created_at       | timestamp
+}
+
+entity "assets" as Asset {
+    🔑 id            | uuid
+    --
+    🔗 org_id        | uuid
+    🔗 created_by    | uuid
+    name             | varchar
+    type             | enum
+    value            | varchar
+    created_at       | timestamp
+}
+
+entity "scans" as Scan {
+    🔑 id            | uuid
+    --
+    🔗 asset_id      | uuid
+    🔗 org_id        | uuid
+    🔗 initiated_by  | uuid
+    type             | enum
+    status           | enum
+    is_scheduled     | bool
+    started_at       | timestamp
+    completed_at     | timestamp
+    created_at       | timestamp
+}
+
+entity "scan_schedules" as Schedule {
+    🔑 id            | uuid
+    --
+    🔗 asset_id      | uuid
+    🔗 org_id        | uuid
+    🔗 created_by    | uuid
+    scan_type        | enum
+    frequency        | enum
+    time_of_day      | varchar
+    next_run_at      | timestamp
+    is_active        | bool
+    created_at       | timestamp
+}
+
+' ════════════════════════
+' COLUMN 3
+' ════════════════════════
+
+entity "vulnerabilities" as Vuln {
+    🔑 id            | uuid
+    --
+    name             | varchar
+    severity         | enum
+    description      | text
+    remediation      | text
+    category         | varchar
+    cve_id           | varchar
+    created_at       | timestamp
+}
+
+entity "scan_findings" as Finding {
+    🔑 id            | uuid
+    --
+    🔗 scan_id       | uuid
+    🔗 vuln_id       | uuid
+    evidence         | text
+    location         | varchar
+    raw_output       | text
+    created_at       | timestamp
+}
+
+entity "ai_analyses" as AI {
+    🔑 id            | uuid
+    --
+    🔗 scan_id       | uuid  <<unique>>
+    status           | enum
+    gemini_model     | varchar
+    risk_score       | int
+    risk_level       | enum
+    analysis_text    | text
+    recommendations  | jsonb
+    key_findings     | jsonb
+    prompt_tokens    | int
+    created_at       | timestamp
+}
+
+entity "reports" as Report {
+    🔑 id            | uuid
+    --
+    🔗 scan_id       | uuid
+    🔗 created_by    | uuid
+    format           | enum
+    file_path        | varchar
+    download_url     | varchar
+    expires_at       | timestamp
+    created_at       | timestamp
+}
+
+' ════════════════════════
+' Hidden grid guides
+' ════════════════════════
+
+User      -[hidden]down-> OrgMember
+OrgMember -[hidden]down-> Notif
+
+Org       -[hidden]down-> Asset
+Asset     -[hidden]down-> Scan
+Scan      -[hidden]down-> Schedule
+
+Vuln      -[hidden]down-> Finding
+Finding   -[hidden]down-> AI
+AI        -[hidden]down-> Report
+
+User      -[hidden]right-> Org
+Org       -[hidden]right-> Vuln
+
+' ════════════════════════
+' Relationships
+' ════════════════════════
+
+User     ||--o{ OrgMember : " "
+Org      ||--o{ OrgMember : " "
+Org      ||--o{ Asset     : " "
+User     |o--o{ Asset     : " "
+Org      ||--o{ Scan      : " "
+Asset    ||--o{ Scan      : " "
+User     |o--o{ Scan      : " "
+Scan     ||--o{ Finding   : " "
+Vuln     ||--o{ Finding   : " "
+Scan     ||--o| AI        : " "
+Scan     ||--o{ Report    : " "
+User     |o--o{ Report    : " "
+User     ||--o{ Notif     : " "
+Asset    ||--o{ Schedule  : " "
+Org      ||--o{ Schedule  : " "
+User     |o--o{ Schedule  : " "
+
+@enduml

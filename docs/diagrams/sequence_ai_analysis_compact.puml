@@ -1,0 +1,105 @@
+@startuml SD-10_AI_Analysis
+
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Arial"
+skinparam defaultFontSize 17
+skinparam sequenceMessageAlign center
+skinparam monochrome true
+skinparam shadowing false
+skinparam dpi 300
+
+skinparam participant {
+    BackgroundColor #FFFFFF
+    BorderColor #555555
+    BorderThickness 1
+    FontColor #000000
+    FontStyle plain
+}
+skinparam actor {
+    BackgroundColor #FFFFFF
+    BorderColor #555555
+    BorderThickness 1
+    FontColor #000000
+}
+skinparam sequence {
+    ArrowColor #333333
+    ArrowThickness 1
+    ArrowFontColor #000000
+    ArrowFontSize 16
+    LifeLineBorderColor #333333
+    LifeLineBorderThickness 1
+    LifeLineBackgroundColor #FFFFFF
+    GroupBodyBackgroundColor #F8F8F8
+    GroupBorderColor #888888
+    GroupBorderThickness 1
+    GroupHeaderFontColor #000000
+    DividerBackgroundColor #E8E8E8
+    DividerFontColor #000000
+    DividerBorderColor #AAAAAA
+    DividerBorderThickness 1
+    ParticipantBorderThickness 1
+}
+skinparam note {
+    BackgroundColor #FAFAFA
+    BorderColor #999999
+    BorderThickness 1
+    FontColor #000000
+}
+
+participant "Scan Orchestrator" as Orch
+participant "AI Analysis Service" as Svc
+participant "Prompt Builder"    as Prompt
+participant "Gemini API"        as Gemini
+database    "Database"          as DB
+
+== Triggered Automatically on Scan Completion ==
+
+Orch -> Svc : emit("scan.completed") { scanId }
+note right of Svc : @OnEvent("scan.completed")\nRuns in background — not awaited
+
+activate Svc
+Svc  -> DB  : save(AIAnalysis { scanId, status: PROCESSING })
+activate DB
+DB  --> Svc  : savedAnalysis
+deactivate DB
+
+Svc  -> DB  : findOne(Scan, { scanId }, relations: [asset])
+activate DB
+DB  --> Svc  : scan + asset
+deactivate DB
+
+Svc  -> DB  : find(ScanFindings, { scanId }, relations: [vulnerability])
+activate DB
+DB  --> Svc  : findings[]
+deactivate DB
+
+Svc  -> Prompt : buildSystemPrompt()
+activate Prompt
+Prompt --> Svc : system prompt string
+deactivate Prompt
+
+Svc  -> Prompt : buildAnalysisPrompt(scan, asset, findings)
+activate Prompt
+Prompt --> Svc : user prompt string
+deactivate Prompt
+
+Svc  -> Gemini : generateContent(systemPrompt + userPrompt)\n[gemini-2.0-flash-exp, temp: 0.2, maxTokens: 8192]
+activate Gemini
+Gemini --> Svc : JSON response text
+deactivate Gemini
+
+Svc  -> Svc  : parseGeminiResponse(text)\n→ extract riskScore, riskLevel,\nexecutiveSummary, keyFindings,\nrecommendations, technicalDetails
+
+Svc  -> DB  : save(AIAnalysis {\nstatus: COMPLETED,\nriskScore, riskLevel,\nanalysisText, recommendations,\nkeyFindings, promptTokens })
+activate DB
+DB  --> Svc  : saved
+deactivate DB
+
+Svc  -> Orch : emit("ai.analysis.completed") { scanId, riskScore }
+deactivate Svc
+
+alt Analysis Failed
+    Svc -> DB  : save(AIAnalysis { status: FAILED, errorMessage })
+end
+
+@enduml

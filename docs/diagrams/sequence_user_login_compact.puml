@@ -1,0 +1,117 @@
+@startuml SD-02_User_Login
+
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Arial"
+skinparam defaultFontSize 17
+skinparam sequenceMessageAlign center
+skinparam monochrome true
+skinparam shadowing false
+skinparam dpi 300
+
+skinparam participant {
+    BackgroundColor #FFFFFF
+    BorderColor #555555
+    BorderThickness 1
+    FontColor #000000
+    FontStyle plain
+}
+
+skinparam actor {
+    BackgroundColor #FFFFFF
+    BorderColor #555555
+    BorderThickness 1
+    FontColor #000000
+}
+
+skinparam sequence {
+    ArrowColor #333333
+    ArrowThickness 1
+    ArrowFontColor #000000
+    ArrowFontSize 16
+    LifeLineBorderColor #333333
+    LifeLineBorderThickness 1
+    LifeLineBackgroundColor #FFFFFF
+    GroupBodyBackgroundColor #F8F8F8
+    GroupBorderColor #888888
+    GroupBorderThickness 1
+    GroupHeaderFontColor #000000
+    DividerBackgroundColor #E8E8E8
+    DividerFontColor #000000
+    DividerBorderColor #AAAAAA
+    DividerBorderThickness 1
+    BoxBorderColor #888888
+    BoxBorderThickness 1
+    ParticipantBorderThickness 1
+}
+
+skinparam note {
+    BackgroundColor #FAFAFA
+    BorderColor #999999
+    BorderThickness 1
+    FontColor #000000
+}
+
+' ─── Participants ───────────────────────────────────────
+actor       "User"              as User
+participant "Web UI"            as UI
+participant "Auth Controller"   as Ctrl
+participant "Auth Service"      as Svc
+database    "Database"          as DB
+
+' ════════════════════════════════════════════════════════
+== Form Submission ==
+' ════════════════════════════════════════════════════════
+
+User -> UI  : Fill in email, password\nClick "Log In"
+UI   -> UI  : Validate fields
+
+alt Validation fails
+    UI --> User : Show inline field errors
+end
+
+UI -> Ctrl : POST /auth/login\n{ email, password }
+
+' ════════════════════════════════════════════════════════
+== Authentication Logic ==
+' ════════════════════════════════════════════════════════
+
+Ctrl -> Svc : login(dto)
+activate Svc
+
+Svc -> DB : findOne({ email })
+activate DB
+DB --> Svc : result (user)
+deactivate DB
+
+alt User not found
+    Svc --> Ctrl : 401 Unauthorized
+    Ctrl --> UI  : 401 Invalid credentials
+    UI  --> User : Show error message
+end
+
+Svc -> Svc : bcrypt.compare(password, hash)
+
+alt Password mismatch
+    Svc --> Ctrl : 401 Unauthorized
+    Ctrl --> UI  : 401 Invalid credentials
+    UI  --> User : Show error message
+end
+
+Svc -> DB : find(OrganizationMember)\n{ userId: user.id }
+activate DB
+DB --> Svc : organizations
+deactivate DB
+
+Svc -> Svc : Sign accessToken + refreshToken (JWT)
+
+Svc --> Ctrl : AuthResponse\n{ accessToken, refreshToken, user, organizations }
+deactivate Svc
+
+' ════════════════════════════════════════════════════════
+== Success ==
+' ════════════════════════════════════════════════════════
+
+Ctrl --> UI   : 200 OK + AuthResponse
+UI   --> User : Toast "Welcome back!"\nRedirect to /overview
+
+@enduml

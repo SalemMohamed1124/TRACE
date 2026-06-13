@@ -20,9 +20,11 @@ const ScanFormContext = createContext<ScanFormContextProps | null>(null);
 
 export function ScanFormProvider({
   onClose,
+  initialAssetId,
   children,
 }: {
   onClose?: () => void;
+  initialAssetId?: string;
   children: ReactNode;
 }) {
   const { close: modalClose } = useViewModal();
@@ -35,6 +37,7 @@ export function ScanFormProvider({
   const form = useForm<ScanFormValues>({
     resolver: zodResolver(ScanFormSchema),
     defaultValues: {
+      assetId: initialAssetId || "",
       type: "QUICK",
       authMode: "auto",
       username: "",

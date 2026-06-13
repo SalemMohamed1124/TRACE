@@ -1,0 +1,86 @@
+@startuml SD-04_Asset_Management
+
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Arial"
+skinparam defaultFontSize 17
+skinparam sequenceMessageAlign center
+skinparam monochrome true
+skinparam shadowing false
+skinparam dpi 300
+
+skinparam participant {
+    BackgroundColor #FFFFFF
+    BorderColor #555555
+    BorderThickness 1
+    FontColor #000000
+    FontStyle plain
+}
+skinparam actor {
+    BackgroundColor #FFFFFF
+    BorderColor #555555
+    BorderThickness 1
+    FontColor #000000
+}
+skinparam sequence {
+    ArrowColor #333333
+    ArrowThickness 1
+    ArrowFontColor #000000
+    ArrowFontSize 16
+    LifeLineBorderColor #333333
+    LifeLineBorderThickness 1
+    LifeLineBackgroundColor #FFFFFF
+    GroupBodyBackgroundColor #F8F8F8
+    GroupBorderColor #888888
+    GroupBorderThickness 1
+    GroupHeaderFontColor #000000
+    DividerBackgroundColor #E8E8E8
+    DividerFontColor #000000
+    DividerBorderColor #AAAAAA
+    DividerBorderThickness 1
+    ParticipantBorderThickness 1
+}
+skinparam note {
+    BackgroundColor #FAFAFA
+    BorderColor #999999
+    BorderThickness 1
+    FontColor #000000
+}
+
+actor       "User"   as User
+participant "Web UI" as UI
+participant "Backend" as Back
+database    "DB"     as DB
+
+== Create ==
+User -> UI   : Fill form, click "Add"
+UI   -> Back : POST /api/assets
+Back -> DB   : duplicate check + save
+DB  --> Back : asset
+Back --> UI  : 201 Created
+UI  --> User : Toast "Asset added"
+
+== Update ==
+User -> UI   : Edit fields, click "Save"
+UI   -> Back : PATCH /api/assets/:id
+Back -> DB   : findOne + save
+DB  --> Back : updated
+Back --> UI  : 200 OK
+UI  --> User : Toast "Asset updated"
+
+== Delete ==
+User -> UI   : Click "Delete"
+UI   -> Back : DELETE /api/assets/:id
+Back -> DB   : check active scan + remove
+DB  --> Back : ok (400 if scan running)
+Back --> UI  : 200 OK
+UI  --> User : Toast "Asset deleted"
+
+== Bulk Create ==
+User -> UI   : Paste targets, click "Bulk"
+UI   -> Back : POST /api/assets/bulk
+Back -> DB   : for each: check duplicate, save or skip
+DB  --> Back : { created[], skipped[] }
+Back --> UI  : 201 Created
+UI  --> User : Toast "N registered" + skipped warning
+
+@enduml

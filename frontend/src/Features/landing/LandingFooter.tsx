@@ -3,8 +3,35 @@ import { TraceLogo } from "@/components/layout/TraceLogo";
 
 export function LandingFooter() {
   return (
-    <footer className="relative z-10 py-12 bg-background">
-      <div className="max-w-7xl mx-auto px-6">
+    <footer className="relative z-10 py-12 bg-background overflow-hidden">
+      {/* Minimal CD Background - Right Half */}
+      <div className="absolute top-0 right-0 w-1/2 h-full overflow-hidden pointer-events-none opacity-[0.15] dark:opacity-[0.03] text-foreground">
+        <svg 
+          viewBox="0 0 1000 1000" 
+          className="absolute top-1/2 -translate-y-1/2 right-0 translate-x-[35%] w-[180%] h-[180%] animate-spin [animation-duration:25s]"
+        >
+          <g fill="none" stroke="currentColor" strokeWidth="60" strokeLinecap="round">
+            {/* Outer Rim */}
+            <circle cx="500" cy="500" r="400" />
+            {/* Inner Ring */}
+            <circle cx="500" cy="500" r="140" />
+            {/* Center Dot */}
+            <circle cx="500" cy="500" r="50" fill="currentColor" stroke="none" />
+            {/* Gloss/Reflection Arcs (Math: 2 * PI * 270 = 1696.4. Dash = 350, Gap = 498.2) */}
+            <circle 
+              cx="500" 
+              cy="500" 
+              r="270" 
+              strokeDasharray="350 498.2" 
+              strokeDashoffset="150" 
+            />
+          </g>
+        </svg>
+        {/* Gradient fade to blend seamlessly into the left side */}
+        <div className="absolute inset-0 bg-gradient-to-l from-transparent via-background/50 to-background" />
+      </div>
+
+      <div className="relative z-10 max-w-7xl mx-auto px-6">
         <div className="grid md:grid-cols-4 gap-8 mb-10">
           <div className="md:col-span-1">
             <div className="flex items-center gap-2.5 mb-4">
@@ -42,7 +69,7 @@ export function LandingFooter() {
                   href="#how-it-works"
                   className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  How It Works
+                  Get Started
                 </a>
               </li>
             </ul>

@@ -8,10 +8,10 @@ import ScanForm from "./ScanForm";
 export function useScanFormModals() {
   const { view } = useViewModal();
 
-  const openCreate = () => {
+  const openCreate = (initialAssetId?: string) => {
     view({
       title: "Initiate Security Scan",
-      content: <ScanForm />,
+      content: <ScanForm initialAssetId={initialAssetId} />,
       noPadding: true,
       defaultScroll: false,
     });

@@ -3,6 +3,7 @@
 import { Brain, ShieldCheck, Activity, FileText } from "lucide-react";
 import { TraceLogo, TraceIcon } from "@/components/layout/TraceLogo";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
 
 const features = [
   {
@@ -63,10 +64,10 @@ export function AuthInfoPanel() {
       </div>
 
       <div className="relative z-10">
-          <div className="flex items-center gap-4 mb-8">
+        <Link href="/" className="flex items-center gap-4 mb-8 w-fit group cursor-pointer transition-transform active:scale-95 focus:outline-none">
           <TraceLogo iconClassName="size-12" nameClassName="text-2xl font-black tracking-tighter uppercase" />
           <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-[0.2em] mt-1 opacity-60">Security Intelligence</p>
-        </div>
+        </Link>
         <h2 className="text-4xl font-black text-foreground mb-4 tracking-tighter uppercase leading-[0.9]">
           Secure your <br/> digital assets.
         </h2>

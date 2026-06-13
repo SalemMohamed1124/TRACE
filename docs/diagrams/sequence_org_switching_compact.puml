@@ -1,0 +1,102 @@
+@startuml SD-12_Organization_Switching
+
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Arial"
+skinparam defaultFontSize 17
+skinparam sequenceMessageAlign center
+skinparam monochrome true
+skinparam shadowing false
+skinparam dpi 300
+
+skinparam participant {
+    BackgroundColor #FFFFFF
+    BorderColor #555555
+    BorderThickness 1
+    FontColor #000000
+    FontStyle plain
+}
+skinparam actor {
+    BackgroundColor #FFFFFF
+    BorderColor #555555
+    BorderThickness 1
+    FontColor #000000
+}
+skinparam sequence {
+    ArrowColor #333333
+    ArrowThickness 1
+    ArrowFontColor #000000
+    ArrowFontSize 16
+    LifeLineBorderColor #333333
+    LifeLineBorderThickness 1
+    LifeLineBackgroundColor #FFFFFF
+    GroupBodyBackgroundColor #F8F8F8
+    GroupBorderColor #888888
+    GroupBorderThickness 1
+    GroupHeaderFontColor #000000
+    DividerBackgroundColor #E8E8E8
+    DividerFontColor #000000
+    DividerBorderColor #AAAAAA
+    DividerBorderThickness 1
+    ParticipantBorderThickness 1
+}
+skinparam note {
+    BackgroundColor #FAFAFA
+    BorderColor #999999
+    BorderThickness 1
+    FontColor #000000
+}
+
+actor       "User"       as User
+participant "Web UI"     as UI
+participant "Controller" as Ctrl
+participant "Service"    as Svc
+database    "Database"   as DB
+
+' ═════════════════════════════════════════════════════════
+== Switch Organization (Client-Side Only) ==
+' ═════════════════════════════════════════════════════════
+
+User -> UI : Click org in dropdown
+UI   -> UI : switchOrg(orgId)
+note right of UI
+  1. Write orgId to localStorage
+  2. Notify auth listeners
+  3. Clear React Query cache
+  4. router.push("/overview")
+end note
+UI  --> User : Redirect to /overview
+
+' ═════════════════════════════════════════════════════════
+== API Requests Scoped to New Org ==
+' ═════════════════════════════════════════════════════════
+
+UI   -> Ctrl : GET /api/assets\nx-org-id: <newOrgId>
+activate Ctrl
+Ctrl -> Svc  : inject orgId from header
+Svc  -> DB   : query scoped to orgId
+DB  --> Svc  : result
+Svc --> Ctrl : data
+Ctrl --> UI  : 200 OK
+deactivate Ctrl
+UI  --> User : Dashboard shows new org
+
+' ═════════════════════════════════════════════════════════
+== Create New Organization ==
+' ═════════════════════════════════════════════════════════
+
+User -> UI   : Enter name, click "Create"
+UI   -> Ctrl : POST /api/organizations
+activate Ctrl
+Ctrl -> Svc  : createOrganization(userId, dto)
+activate Svc
+Svc  -> DB   : save(Organization)
+DB  --> Svc  : savedOrg
+Svc  -> DB   : save(Member, role: ADMIN)
+DB  --> Svc  : member
+Svc --> Ctrl : organization
+deactivate Svc
+Ctrl --> UI  : 201 Created
+deactivate Ctrl
+UI  --> User : New org active
+
+@enduml

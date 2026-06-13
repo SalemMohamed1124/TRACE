@@ -1,0 +1,107 @@
+@startuml SD-05_User_Management
+
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Arial"
+skinparam defaultFontSize 17
+skinparam sequenceMessageAlign center
+skinparam monochrome true
+skinparam shadowing false
+skinparam dpi 300
+
+skinparam participant {
+    BackgroundColor #FFFFFF
+    BorderColor #555555
+    BorderThickness 1
+    FontColor #000000
+    FontStyle plain
+}
+skinparam actor {
+    BackgroundColor #FFFFFF
+    BorderColor #555555
+    BorderThickness 1
+    FontColor #000000
+}
+skinparam sequence {
+    ArrowColor #333333
+    ArrowThickness 1
+    ArrowFontColor #000000
+    ArrowFontSize 16
+    LifeLineBorderColor #333333
+    LifeLineBorderThickness 1
+    LifeLineBackgroundColor #FFFFFF
+    GroupBodyBackgroundColor #F8F8F8
+    GroupBorderColor #888888
+    GroupBorderThickness 1
+    GroupHeaderFontColor #000000
+    DividerBackgroundColor #E8E8E8
+    DividerFontColor #000000
+    DividerBorderColor #AAAAAA
+    DividerBorderThickness 1
+    ParticipantBorderThickness 1
+}
+skinparam note {
+    BackgroundColor #FAFAFA
+    BorderColor #999999
+    BorderThickness 1
+    FontColor #000000
+}
+
+actor       "Admin"      as Admin
+participant "Web UI"     as UI
+participant "Controller" as Ctrl
+participant "Service"    as Svc
+database    "Database"   as DB
+
+' ═════════════════════════════════════════════════════════
+== Invite Member ==
+' ═════════════════════════════════════════════════════════
+
+Admin -> UI  : Enter email + role
+UI   -> Ctrl : POST .../members { email, role }
+activate Ctrl
+Ctrl -> Svc  : addMember(orgId, dto)
+activate Svc
+Svc  -> DB   : find user by email\n(create stub if not found)
+Svc  -> DB   : check duplicate + save member
+DB  --> Svc  : savedMember
+Svc --> Ctrl : member
+deactivate Svc
+Ctrl --> UI  : 201 Created
+deactivate Ctrl
+UI  --> Admin : Toast "Invitation sent"
+
+' ═════════════════════════════════════════════════════════
+== Update Member Role ==
+' ═════════════════════════════════════════════════════════
+
+Admin -> UI  : Select new role
+UI   -> Ctrl : PATCH .../members/:id { role }
+activate Ctrl
+Ctrl -> Svc  : updateMemberRole(orgId, memberId, dto)
+activate Svc
+Svc  -> DB   : findOne + save(new role)
+DB  --> Svc  : updatedMember
+Svc --> Ctrl : member
+deactivate Svc
+Ctrl --> UI  : 200 OK
+deactivate Ctrl
+UI  --> Admin : Toast "Role updated"
+
+' ═════════════════════════════════════════════════════════
+== Remove Member ==
+' ═════════════════════════════════════════════════════════
+
+Admin -> UI  : Click "Remove"
+UI   -> Ctrl : DELETE .../members/:id
+activate Ctrl
+Ctrl -> Svc  : removeMember(orgId, memberId)
+activate Svc
+Svc  -> DB   : remove(OrganizationMember)
+DB  --> Svc  : success
+Svc --> Ctrl : { success: true }
+deactivate Svc
+Ctrl --> UI  : 200 OK
+deactivate Ctrl
+UI  --> Admin : Toast "Member removed"
+
+@enduml

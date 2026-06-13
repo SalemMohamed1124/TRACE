@@ -1,0 +1,99 @@
+@startuml SD-06_Report_Generation
+
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Arial"
+skinparam defaultFontSize 17
+skinparam sequenceMessageAlign center
+skinparam monochrome true
+skinparam shadowing false
+skinparam dpi 300
+
+skinparam participant {
+    BackgroundColor #FFFFFF
+    BorderColor #555555
+    BorderThickness 1
+    FontColor #000000
+    FontStyle plain
+}
+skinparam actor {
+    BackgroundColor #FFFFFF
+    BorderColor #555555
+    BorderThickness 1
+    FontColor #000000
+}
+skinparam sequence {
+    ArrowColor #333333
+    ArrowThickness 1
+    ArrowFontColor #000000
+    ArrowFontSize 16
+    LifeLineBorderColor #333333
+    LifeLineBorderThickness 1
+    LifeLineBackgroundColor #FFFFFF
+    GroupBodyBackgroundColor #F8F8F8
+    GroupBorderColor #888888
+    GroupBorderThickness 1
+    GroupHeaderFontColor #000000
+    DividerBackgroundColor #E8E8E8
+    DividerFontColor #000000
+    DividerBorderColor #AAAAAA
+    DividerBorderThickness 1
+    ParticipantBorderThickness 1
+}
+skinparam note {
+    BackgroundColor #FAFAFA
+    BorderColor #999999
+    BorderThickness 1
+    FontColor #000000
+}
+
+actor       "User"           as User
+participant "Web\nUI"        as UI
+participant "Reports\nController" as Ctrl
+participant "Reports\nService" as Svc
+participant "PDF\nGen"       as PDF
+database    "DB"             as DB
+collections "File System"    as FS
+
+== Generate Report ==
+
+User -> UI  : Select format, click "Generate"
+UI   -> Ctrl : POST /api/reports
+Ctrl -> Svc  : generateReport(dto)
+
+Svc  -> DB  : load Scan (must be COMPLETED),\nFindings, and AI Analysis
+DB  --> Svc  : data
+
+Svc  -> Svc : buildReportData()
+
+alt PDF or HTML
+    Svc -> PDF : generatePdf() / renderHtml()
+    PDF --> Svc : Buffer / HTML string
+else JSON
+    Svc -> Svc : JSON.stringify()
+end
+
+Svc  -> FS  : writeFileSync()
+Svc  -> DB  : save(Report, expires: 24h)
+DB  --> Svc  : savedReport
+
+Svc --> Ctrl : report record
+Ctrl --> UI  : 201 Created
+UI  --> User : Toast "Report generated"
+
+== Download Report ==
+
+User -> UI  : Click "Download"
+UI   -> Ctrl : GET /api/reports/download/:id
+Ctrl -> Svc  : downloadReport(id)
+
+Svc  -> DB  : findOne(Report), check expiry
+DB  --> Svc  : report
+
+Svc  -> FS  : readFileSync(report.filePath)
+FS  --> Svc  : buffer
+
+Svc --> Ctrl : { buffer, filename }
+Ctrl --> UI  : Attachment response
+UI  --> User : File download starts
+
+@enduml

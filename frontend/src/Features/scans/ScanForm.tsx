@@ -19,9 +19,9 @@ import { ScanFormProvider, useScanForm } from "./ScanFormContext";
 import { ItemContent, ItemDescription, ItemTitle } from "@/components/ui/item";
 import type { ScanType, AuthMode } from "@/types";
 
-export default function ScanForm() {
+export default function ScanForm({ initialAssetId }: { initialAssetId?: string }) {
   return (
-    <ScanFormProvider onClose={() => {}}>
+    <ScanFormProvider onClose={() => {}} initialAssetId={initialAssetId}>
       <ScanFormWrapper />
     </ScanFormProvider>
   );

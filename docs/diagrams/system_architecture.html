@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>TRACE — System Architecture</title>
+<style>
+  body{margin:0;background:#EEF2F7;font-family:'Segoe UI',Arial,sans-serif;display:flex;flex-direction:column;align-items:center;padding:30px}
+  h1{color:#1E3A5F;font-size:24px;margin-bottom:10px;letter-spacing:0.5px}
+  .controls{margin-bottom:20px;display:flex;gap:10px}
+  button{padding:10px 18px;font-weight:bold;border:none;cursor:pointer;font-family:inherit;transition:opacity .2s;font-size:13px}
+  button:hover{opacity:.88}
+  .btn-png{background:#4A90D9;color:#fff}
+  .btn-svg{background:#1E3A5F;color:#fff}
+  #wrap{background:#fff;box-shadow:0 4px 24px rgba(0,0,0,.08);padding:30px;overflow:auto}
+</style>
+</head>
+<body>
+<h1>TRACE Platform — System Architecture</h1>
+<div class="controls">
+  <button class="btn-png" onclick="downloadPNG()">Download as PNG</button>
+  <button class="btn-svg" onclick="downloadSVG()">Download as SVG</button>
+</div>
+<div id="wrap"><svg id="arch" xmlns="http://www.w3.org/2000/svg"></svg></div>
+<script>
+const NS='http://www.w3.org/2000/svg';
+const W=1150, H=1150;
+
+function mk(tag,a,p){const e=document.createElementNS(NS,tag);Object.entries(a).forEach(([k,v])=>e.setAttribute(k,v));if(p)p.appendChild(e);return e;}
+function tx(p,txt,x,y,opts={}){
+  const e=mk('text',{x,y,fill:opts.fill||'#1E293B','font-family':opts.ff||"'Segoe UI',Arial,sans-serif",'font-size':opts.fs||'12','font-weight':opts.fw||'normal','text-anchor':opts.anchor||'start',...(opts.extra||{})},p);
+  e.textContent=txt;return e;
+}
+
+// Colors for visual comfort (softer backgrounds, clear borders)
+const Z={
+  clientBg:'#F4F7FA',clientBd:'#A0AEC0',
+  frontBg:'#EBF4FF',frontBd:'#72AEE6',
+  backBg:'#F3F0FF',backBd:'#B7A8ED',
+  dataBg:'#EFFFF4',dataBd:'#68D391',
+  extBg:'#FFFAF0',extBd:'#F6AD55',
+  boxBg:'#FFFFFF',boxBd:'#CBD5E1',
+  arrow:'#4A5568',arrowH:'#3182CE',
+  zone:'#4A5568'
+};
+
+const svg=document.getElementById('arch');
+svg.setAttribute('width',W);
+svg.setAttribute('height',H);
+svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
+
+// White background
+mk('rect',{width:W,height:H,fill:'#ffffff'},svg);
+
+// === HELPER: Sharp rect box ===
+function box(x,y,w,h,fill,stroke){
+  mk('rect',{x,y,width:w,height:h,fill,stroke,'stroke-width':'1.5'},svg);
+}
+function boxShadow(x,y,w,h){
+  mk('rect',{x:x+4,y:y+4,width:w,height:h,fill:'rgba(0,0,0,0.05)'},svg);
+}
+
+// === HELPER: Auto-sizing Component Box (Sharp) ===
+function comp(x,y,w,title,items,bgH,bgB,bdC,icon){
+  const itemHeight = 20;
+  const paddingBottom = 16;
+  const h = 32 + (items.length * itemHeight) + paddingBottom;
+  
+  boxShadow(x,y,w,h);
+  box(x,y,w,h,bgB,bdC);
+  
+  // Header
+  mk('rect',{x,y,width:w,height:32,fill:bgH},svg);
+  mk('line',{x1:x,y1:y+32,x2:x+w,y2:y+32,stroke:bdC,'stroke-width':'1'},svg);
+  
+  if(icon) tx(svg,icon,x+10,y+21,{fs:'14'});
+  tx(svg,title,x+(icon?28:12),y+21,{fill:'#fff',fs:'13',fw:'bold'});
+  
+  items.forEach((t,i)=>{
+    tx(svg,t,x+14,y+54+i*itemHeight,{fill:'#334155',fs:'12'});
+  });
+  return h;
+}
+
+function zoneLabel(txt,x,y){
+  tx(svg,txt,x,y,{fill:Z.zone,fs:'13',fw:'bold',letterSpacing:'1.5px'});
+}
+
+// Layout coordinates
+const C1 = 60;
+const C2 = 320;
+const C3 = 580;
+const C4 = 840;
+const CW = 240; // Component Width
+
+// ═══════════════════════════════════════════
+//  ROW 1: CLIENT TIER
+// ═══════════════════════════════════════════
+const T1_Y = 40;
+box(30,T1_Y,W-60,130,Z.clientBg,Z.clientBd);
+zoneLabel('CLIENT TIER',50,65);
+
+comp(C1,80,CW,'🌐 Web Browser',['React SPA (Next.js 14)'],'#4299E1','#ffffff','#90CDF4');
+
+boxShadow(C2,80,CW,68);
+box(C2,80,CW,68,'#ffffff','#ED8936');
+mk('rect',{x:C2,y:80,width:CW,height:32,fill:'#ED8936'},svg);
+tx(svg,'👤 User',C2+12,101,{fill:'#fff',fs:'13',fw:'bold'});
+tx(svg,'Security Analyst',C2+14,130,{fill:'#334155',fs:'12'});
+
+// ═══════════════════════════════════════════
+//  ROW 2: FRONTEND / API GATEWAY
+// ═══════════════════════════════════════════
+const T2_Y = 220;
+box(30,T2_Y,W-60,150,Z.frontBg,Z.frontBd);
+zoneLabel('FRONTEND (Port 3000)',50,245);
+
+comp(C1,260,CW,'📄 Pages / Routes',[
+  'Dashboard · Scans · Assets',
+  'Findings · Reports · Settings'
+],'#3182CE','#ffffff','#90CDF4');
+
+comp(C2,260,CW,'🧩 Components',[
+  'DataTables · Charts',
+  'AI Chat Widget · Org Switcher'
+],'#3182CE','#ffffff','#90CDF4');
+
+comp(C3,260,CW,'🔧 Services',[
+  'Axios API Client',
+  'Auth Context (JWT) · Org Context'
+],'#3182CE','#ffffff','#90CDF4');
+
+comp(C4,260,CW,'🔒 Middleware',[
+  'Route Guards · Token Refresh',
+  'Org Header Injection'
+],'#3182CE','#ffffff','#90CDF4');
+
+// ═══════════════════════════════════════════
+//  ROW 3: BACKEND — NestJS
+// ═══════════════════════════════════════════
+const T3_Y = 430;
+box(30,T3_Y,W-60,390,Z.backBg,Z.backBd);
+zoneLabel('BACKEND (Port 3001)',50,455);
+
+// Row 3a
+comp(C1,475,CW,'🛡️ Auth Module',['JWT Sign/Verify · Refresh Flow'],'#805AD5','#ffffff','#D6BCFA');
+comp(C2,475,CW,'📋 Scan Module',['CRUD Controller · Lifecycle'],'#805AD5','#ffffff','#D6BCFA');
+comp(C3,475,CW,'📡 Event Bus',['EventEmitter2 (scan.completed)'],'#805AD5','#ffffff','#D6BCFA');
+comp(C4,475,CW,'📜 Scan Scripts',['SQLi · XSS · SSL · Ports'],'#805AD5','#ffffff','#D6BCFA');
+
+// Row 3b
+comp(C1,570,CW,'🏢 Org Module',['Multi-Tenant Guards · RBAC'],'#6B46C1','#ffffff','#D6BCFA');
+comp(C2,570,CW,'🔔 Notifications',['In-App Alerts (Scan/AI/System)'],'#6B46C1','#ffffff','#D6BCFA');
+comp(C3,570,CW,'🤖 AI Module',[
+  'Analysis Service',
+  'Chat Service',
+  'Insights / Remediation'
+],'#6B46C1','#ffffff','#D6BCFA');
+comp(C4,570,CW,'🔍 Scan Engine',[
+  'Orchestrator Service',
+  'Script Runner (child_process)',
+  'Progress Store'
+],'#6B46C1','#ffffff','#D6BCFA');
+
+// Row 3c
+comp(C1,685,CW,'📊 Data Modules',[
+  'Assets Entity Management',
+  'Findings Tracking',
+  'Reports & Dashboard Data'
+],'#553C9A','#ffffff','#D6BCFA');
+comp(C2,685,CW,'📝 Report Engine',['PDF · HTML · JSON Rendering'],'#553C9A','#ffffff','#D6BCFA');
+comp(C3,685,CW,'📈 Aggregator',['Findings Summary · Rollups'],'#553C9A','#ffffff','#D6BCFA');
+comp(C4,685,CW,'⏰ Scheduler',['Cron-based Triggers · Auto-Run'],'#553C9A','#ffffff','#D6BCFA');
+
+
+// ═══════════════════════════════════════════
+//  ROW 4: DATA LAYER & EXTERNAL
+// ═══════════════════════════════════════════
+const T4_Y = 870;
+
+box(30,T4_Y,520,230,Z.dataBg,Z.dataBd);
+zoneLabel('DATA LAYER',50,895);
+
+comp(60,915,220,'🐘 PostgreSQL 15',[
+  'TypeORM Entities (11 tables)',
+  'users · organizations',
+  'scans · findings · assets',
+  'ai_analyses · reports',
+  'notifications · schedules'
+],'#38A169','#ffffff','#9AE6B4');
+
+comp(300,915,220,'🔴 Redis 7',[
+  'Session Cache',
+  'Rate Limiting',
+  'Scan Progress Pub/Sub',
+  'Token Blacklist'
+],'#38A169','#ffffff','#9AE6B4');
+
+box(570,T4_Y,W-600,230,Z.extBg,Z.extBd);
+zoneLabel('EXTERNAL SERVICES',590,895);
+
+comp(C3,915,CW,'✨ Google Gemini API',[
+  'gemini-2.0-flash-exp',
+  'Scan Analysis',
+  'Chat / Remediation'
+],'#DD6B20','#ffffff','#FBD38D');
+
+comp(C4,915,CW,'🎯 Target Hosts',[
+  'Scanned Web Apps',
+  'Network Endpoints'
+],'#DD6B20','#ffffff','#FBD38D');
+
+comp(C4,1015,CW,'🌍 CVE Databases',[
+  'Vulnerability Lookups'
+],'#DD6B20','#ffffff','#FBD38D');
+
+// ═══════════════════════════════════════════
+//  ARROWS
+// ═══════════════════════════════════════════
+
+function arrow(x1,y1,x2,y2,label,dashed,color,labelY){
+  const c=color||Z.arrow;
+  const attrs={x1,y1,x2,y2,stroke:c,'stroke-width':'2'};
+  if(dashed) attrs['stroke-dasharray']='6,5';
+  
+  const dx=x2-x1, dy=y2-y1;
+  const len=Math.sqrt(dx*dx+dy*dy);
+  if(len===0)return;
+  const ux=dx/len, uy=dy/len;
+  const ax=x2-ux*10, ay=y2-uy*10;
+  const px=-uy*5, py=ux*5;
+
+  mk('line',attrs,svg);
+  mk('polygon',{points:`${x2},${y2} ${ax+px},${ay+py} ${ax-px},${ay-py}`,fill:c},svg);
+
+  if(label){
+    const mx=(x1+x2)/2;
+    const my=labelY || (y1+y2)/2;
+    const tw=label.length*7+16;
+    mk('rect',{x:mx-tw/2,y:my-13,width:tw,height:26,fill:'#fff',stroke:c,'stroke-width':'1.5'},svg);
+    tx(svg,label,mx,my+4,{fill:c,fs:'11.5',fw:'bold',anchor:'middle'});
+  }
+}
+
+// User -> Browser
+arrow(320,114,300,114,'',false,'#DD6B20');
+
+// Client -> Frontend
+// Midpoint space between 170 and 220 is 195
+arrow(180,148,180,260,'HTTP/HTTPS',false,'#3182CE',195);
+
+// Frontend -> Backend
+// Midpoint space between 370 and 430 is 400
+arrow(180,348,180,475,'REST API',false,'#805AD5',400);
+arrow(440,348,440,475,'SSE Stream',true,'#805AD5',400);
+arrow(700,348,700,475,'WebSockets',true,'#805AD5',400);
+
+// Backend -> Data/External
+// Midpoint space between 820 and 870 is 845
+arrow(180,793,180,915,'TypeORM',false,'#38A169',845);
+arrow(410,753,410,915,'ioredis',false,'#38A169',845);
+
+// Backend -> External
+arrow(700,753,700,915,'REST/SDK',true,'#DD6B20',845); // AI -> Gemini
+arrow(960,753,960,915,'child_process',true,'#DD6B20',845); // Engine -> Target Hosts
+
+// ═══════════════════════════════════════════
+//  EXPORT FUNCTIONS
+// ═══════════════════════════════════════════
+
+function getSVGString(){
+  const s=new XMLSerializer();
+  let src=s.serializeToString(svg);
+  if(!src.match(/^<svg[^>]+xmlns="http/)) src=src.replace(/^<svg/,'<svg xmlns="http://www.w3.org/2000/svg"');
+  return '<?xml version="1.0" standalone="no"?>\r\n'+src;
+}
+function downloadSVG(){
+  const a=document.createElement('a');
+  a.href='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(getSVGString());
+  a.download='TRACE_System_Architecture.svg';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+}
+function downloadPNG(){
+  const c=document.createElement('canvas'),ctx=c.getContext('2d'),sc=3.125; // 3.125x scale for ~300 DPI
+  c.width=W*sc;c.height=H*sc;ctx.scale(sc,sc);
+  ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);
+  const img=new Image();
+  img.src='data:image/svg+xml;base64,'+btoa(unescape(encodeURIComponent(getSVGString())));
+  img.onload=()=>{
+    ctx.drawImage(img,0,0);
+    const a=document.createElement('a');
+    a.download='TRACE_System_Architecture.png';
+    a.href=c.toDataURL('image/png',1.0);
+    document.body.appendChild(a);a.click();document.body.removeChild(a);
+  };
+}
+</script>
+</body>
+</html>

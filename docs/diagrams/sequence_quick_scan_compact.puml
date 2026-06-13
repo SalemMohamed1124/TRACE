@@ -1,0 +1,92 @@
+@startuml SD-03a_Quick_Scan
+
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Arial"
+skinparam defaultFontSize 17
+skinparam sequenceMessageAlign center
+skinparam monochrome true
+skinparam shadowing false
+skinparam dpi 300
+
+
+
+skinparam participant {
+    BackgroundColor #FFFFFF
+    BorderColor #555555
+    BorderThickness 1
+    FontColor #000000
+    FontStyle plain
+}
+skinparam actor {
+    BackgroundColor #FFFFFF
+    BorderColor #555555
+    BorderThickness 1
+    FontColor #000000
+}
+skinparam sequence {
+    ArrowColor #333333
+    ArrowThickness 1
+    ArrowFontColor #000000
+    ArrowFontSize 16
+    LifeLineBorderColor #333333
+    LifeLineBorderThickness 1
+    LifeLineBackgroundColor #FFFFFF
+    GroupBodyBackgroundColor #F8F8F8
+    GroupBorderColor #888888
+    GroupBorderThickness 1
+    GroupHeaderFontColor #000000
+    DividerBackgroundColor #E8E8E8
+    DividerFontColor #000000
+    DividerBorderColor #AAAAAA
+    DividerBorderThickness 1
+    ParticipantBorderThickness 1
+}
+skinparam note {
+    BackgroundColor #FAFAFA
+    BorderColor #999999
+    BorderThickness 1
+    FontColor #000000
+}
+
+actor       "User"        as User
+participant "Web\nUI"     as UI
+participant "Scan\nAPI"   as API
+participant "BullMQ\nProc" as Proc
+participant "Orches-\ntrator" as Orch
+participant "Script\nRunner" as Runner
+database    "DB"          as DB
+
+== Initiation ==
+
+User -> UI  : Quick Scan\nClick Start
+UI   -> API : POST /api/scans
+API  -> DB  : save(Scan)
+API  -> Proc : enqueue job
+API --> UI  : 201 Created
+UI   -> API : GET SSE
+
+== Execution ==
+
+Proc -> DB  : update RUNNING
+Proc -> Orch : runQuickScan()
+
+Orch -> Runner : Phase 0 (0–10%)\nAuth Discovery
+Runner --> Orch : cookies
+
+Orch -> Runner : Phase 1 (10–30%)\nInfrastructure
+Runner --> Orch : findings
+
+Orch -> Runner : Phase 2 (30–70%)\nVuln Testing
+Runner --> Orch : findings
+
+Orch -> Runner : Phase 3 (70–90%)\nWAF & Rate Limiting
+Runner --> Orch : findings
+
+== Completion ==
+
+Orch -> DB  : save() + COMPLETED
+Orch -> API : emit event
+API --> UI  : SSE 100%
+UI  --> User : Show findings
+
+@enduml
