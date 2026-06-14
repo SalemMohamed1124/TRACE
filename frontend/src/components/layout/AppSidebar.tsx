@@ -381,6 +381,11 @@ function SidebarFooter() {
         .slice(0, 2)
     : "VS";
 
+  const openCreateOrganizationDialog = () => {
+    setOpen(false);
+    requestAnimationFrame(() => setCreateOpen(true));
+  };
+
   return (
     <div className="border-t border-border/50 p-2 shrink-0">
       <CreateOrganizationDialog
@@ -472,11 +477,7 @@ function SidebarFooter() {
 
           <DropdownMenuItem
             className="gap-2 text-xs rounded-lg px-2 py-2 text-muted-foreground hover:text-foreground cursor-pointer"
-            onSelect={(e) => {
-              e.preventDefault();
-              setOpen(false);
-              setCreateOpen(true);
-            }}
+            onClick={openCreateOrganizationDialog}
           >
             <Plus className="size-3.5" /> Create Organization
           </DropdownMenuItem>
