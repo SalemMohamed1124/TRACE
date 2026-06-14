@@ -6,9 +6,6 @@ import {
   LogOut,
   Settings,
   Menu,
-  Sun,
-  Moon,
-  Monitor,
   Check,
   ArrowRightLeft,
 } from "lucide-react";
@@ -18,7 +15,6 @@ import { useRouter } from "next/navigation";
 import { useAppSidebar } from "@/Contexts/AppSidebarContext";
 import { useAuth } from "@/hooks/useAuth";
 import { useOrg } from "@/hooks/useOrg";
-import { useTheme } from "next-themes";
 import { ModeToggle } from "./ModeToggle";
 import { TraceLogo } from "./TraceLogo";
 import {
@@ -34,11 +30,14 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 // AppHeader — transparent / same-bg-as-app, floating feel
 // ─────────────────────────────────────────────────────────
 function AppHeader() {
-  const { toggle, isMobile } = useAppSidebar();
+  const { toggle } = useAppSidebar();
   const { user, logout } = useAuth();
-  const { setTheme, theme } = useTheme();
   const { organizations, activeOrgId, switchOrg } = useOrg();
   const router = useRouter();
+
+  const handleSwitchOrganization = (orgId: string) => {
+    requestAnimationFrame(() => switchOrg(orgId));
+  };
 
   const userInitials = user?.name
     ? user.name
@@ -134,7 +133,7 @@ function AppHeader() {
                 No notifications yet
               </p>
               <p className="text-xs text-muted-foreground/60 mt-1">
-                You're all caught up!
+                You&apos;re all caught up!
               </p>
             </div>
           </DropdownMenuContent>
@@ -173,10 +172,7 @@ function AppHeader() {
                   <DropdownMenuItem
                     key={org.id}
                     className="p-0 focus:bg-transparent"
-                    onSelect={(e) => {
-                      e.preventDefault();
-                      switchOrg(org.id);
-                    }}
+                    onClick={() => handleSwitchOrganization(org.id)}
                   >
                     <div className="flex w-full items-center gap-3 rounded-lg px-2 py-1.5 cursor-pointer hover:bg-muted transition-colors">
                       <div className="flex size-7 items-center justify-center rounded-lg bg-muted text-[10px] font-bold text-primary border border-border shrink-0">

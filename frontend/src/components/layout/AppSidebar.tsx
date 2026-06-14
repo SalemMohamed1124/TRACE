@@ -31,7 +31,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { RadioGroup } from "@/components/ui/radio-group";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import {
@@ -386,6 +385,14 @@ function SidebarFooter() {
     requestAnimationFrame(() => setCreateOpen(true));
   };
 
+  const handleSwitchOrganization = (orgId: string) => {
+    setOpen(false);
+    requestAnimationFrame(() => {
+      switchOrg(orgId);
+      close();
+    });
+  };
+
   return (
     <div className="border-t border-border/50 p-2 shrink-0">
       <CreateOrganizationDialog
@@ -438,21 +445,14 @@ function SidebarFooter() {
             <ArrowRightLeft className="size-3" /> Switch Organization
           </div>
           <ScrollArea className="h-36 my-1">
-            <RadioGroup value={activeOrgId} onValueChange={switchOrg}>
+            <div className="space-y-0.5">
               {(organizations ?? []).map((org) => (
                 <DropdownMenuItem
                   key={org.id}
                   className="p-0 focus:bg-transparent"
-                  onSelect={(e) => {
-                    e.preventDefault();
-                    switchOrg(org.id);
-                    setTimeout(() => close(), 100);
-                  }}
+                  onClick={() => handleSwitchOrganization(org.id)}
                 >
-                  <label
-                    htmlFor={`org-${org.id}`}
-                    className="flex w-full items-center gap-3 rounded-lg px-2 py-2 cursor-pointer hover:bg-muted transition-colors"
-                  >
+                  <div className="flex w-full items-center gap-3 rounded-lg px-2 py-2 cursor-pointer hover:bg-muted transition-colors">
                     <div className="flex size-7 items-center justify-center rounded-lg bg-muted text-[10px] font-bold text-primary border border-border">
                       {org.name[0].toUpperCase()}
                     </div>
@@ -467,10 +467,10 @@ function SidebarFooter() {
                     {activeOrgId === org.id && (
                       <Check className="size-3.5 text-primary shrink-0" />
                     )}
-                  </label>
+                  </div>
                 </DropdownMenuItem>
               ))}
-            </RadioGroup>
+            </div>
           </ScrollArea>
 
           <DropdownMenuSeparator className="my-1" />
