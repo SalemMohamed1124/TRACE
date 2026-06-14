@@ -3,10 +3,11 @@
 import { useQuery } from "@tanstack/react-query";
 import type { Notification } from "@/types";
 import { fetchNotifications } from "@/Services/Notifications";
+import { notificationKeys } from "./notificationKeys";
 
 export function useNotifications() {
   const query = useQuery<Notification[], Error>({
-    queryKey: ["notifications-list"],
+    queryKey: notificationKeys.list(),
     queryFn: fetchNotifications,
   });
 

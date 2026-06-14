@@ -1,7 +1,7 @@
 "use client";
 
 import type { ColumnDef } from "@tanstack/react-table";
-import type { Notification } from "@/types";
+import type { Notification, NotificationType } from "@/types";
 import { DataTableColumnHeader } from "@/components/dataTable/DataTableColumnHeader";
 import { SeverityBadge } from "@/components/layout/SeverityBadge";
 import {
@@ -11,18 +11,19 @@ import {
   AlertTriangle,
   Bell,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { formatRelativeTime } from "@/lib/utils";
 import NotificationCard from "./NotificationCard";
 import { cn } from "@/lib/utils";
 
-const ICON_MAP: Record<string, any> = {
+const ICON_MAP: Record<NotificationType, LucideIcon> = {
   SCAN_COMPLETE: CheckCircle,
   SCAN_FAILED: XCircle,
   AI_ANALYSIS_READY: Sparkles,
   CRITICAL_VULN: AlertTriangle,
 };
 
-export const NotificationColumns: ColumnDef<Notification, any>[] = [
+export const NotificationColumns: ColumnDef<Notification, unknown>[] = [
   {
     id: "card",
     cell: ({ row }) => <NotificationCard notification={row.original} />,
@@ -108,5 +109,3 @@ export const NotificationColumns: ColumnDef<Notification, any>[] = [
     meta: { filter: true },
   },
 ];
-
-

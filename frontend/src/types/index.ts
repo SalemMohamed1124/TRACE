@@ -29,6 +29,11 @@ export type ScanStatus =
 export type Severity = "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
 export type OrgRole = "ADMIN" | "EDITOR" | "VIEWER";
 export type ReportFormat = "PDF" | "JSON" | "HTML";
+export type NotificationType =
+  | "SCAN_COMPLETE"
+  | "SCAN_FAILED"
+  | "AI_ANALYSIS_READY"
+  | "CRITICAL_VULN";
 
 export interface User {
   id: string;
@@ -191,11 +196,23 @@ export interface Report {
 export interface Notification {
   id: string;
   userId: string;
-  type: string;
+  type: NotificationType;
   message: string;
   isRead: boolean;
-  metadata: Record<string, unknown>;
+  metadata: NotificationMetadata | null;
   createdAt: string;
+}
+
+export interface NotificationMetadata {
+  organizationId?: string;
+  scanId?: string;
+  assetId?: string;
+  projectId?: string;
+  severity?: Severity;
+  findingsCount?: number;
+  criticalCount?: number;
+  riskScore?: number;
+  error?: string;
 }
 
 // ─── Auth Mode ───────────────────────────────────
@@ -244,4 +261,3 @@ export type ActivityType =
   | "finding_found"
   | "report_generated"
   | "asset_added";
-

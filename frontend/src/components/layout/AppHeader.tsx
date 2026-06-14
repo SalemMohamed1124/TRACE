@@ -8,7 +8,12 @@ import {
   Menu,
   Check,
   ArrowRightLeft,
+  CheckCircle,
+  XCircle,
+  Sparkles,
+  AlertTriangle,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -25,6 +30,17 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useNotifications } from "@/Features/notifications/useNotifications";
+import { useNotificationNavigation } from "@/Features/notifications/useNotificationNavigation";
+import type { Notification, NotificationType } from "@/types";
+import { cn, formatRelativeTime } from "@/lib/utils";
+
+const NOTIFICATION_ICONS: Record<NotificationType, LucideIcon> = {
+  SCAN_COMPLETE: CheckCircle,
+  SCAN_FAILED: XCircle,
+  AI_ANALYSIS_READY: Sparkles,
+  CRITICAL_VULN: AlertTriangle,
+};
 
 // ─────────────────────────────────────────────────────────
 // AppHeader — transparent / same-bg-as-app, floating feel
@@ -34,6 +50,12 @@ function AppHeader() {
   const { user, logout } = useAuth();
   const { organizations, activeOrgId, switchOrg } = useOrg();
   const router = useRouter();
+  const {
+    items: notifications,
+    unreadCount,
+    isPending: isNotificationsPending,
+  } = useNotifications();
+  const openNotification = useNotificationNavigation();
 
   const handleSwitchOrganization = (orgId: string) => {
     requestAnimationFrame(() => switchOrg(orgId));
@@ -114,8 +136,13 @@ function AppHeader() {
         {/* Notifications */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="flex items-center justify-center size-9 rounded-full text-muted-foreground hover:bg-muted transition-colors cursor-pointer">
+            <button className="relative flex items-center justify-center size-9 rounded-full text-muted-foreground hover:bg-muted transition-colors cursor-pointer">
               <Bell className="size-5" />
+              {unreadCount > 0 && (
+                <span className="absolute right-1.5 top-1.5 flex min-w-4 h-4 items-center justify-center rounded-full bg-primary px-1 text-[9px] font-bold leading-none text-primary-foreground">
+                  {unreadCount > 9 ? "9+" : unreadCount}
+                </span>
+              )}
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent
@@ -126,16 +153,49 @@ function AppHeader() {
               <h3 className="font-semibold text-sm text-foreground">
                 Notifications
               </h3>
+              {unreadCount > 0 && (
+                <span className="ml-auto text-[11px] font-bold text-primary">
+                  {unreadCount} unread
+                </span>
+              )}
             </div>
-            <div className="flex flex-col items-center justify-center py-12 text-center px-4">
-              <Bell className="size-8 text-muted-foreground/30 mb-3" />
-              <p className="text-sm text-muted-foreground">
-                No notifications yet
-              </p>
-              <p className="text-xs text-muted-foreground/60 mt-1">
-                You&apos;re all caught up!
-              </p>
-            </div>
+            {isNotificationsPending ? (
+              <div className="px-4 py-8 text-center text-sm text-muted-foreground">
+                Loading notifications...
+              </div>
+            ) : notifications.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 text-center px-4">
+                <Bell className="size-8 text-muted-foreground/30 mb-3" />
+                <p className="text-sm text-muted-foreground">
+                  No notifications yet
+                </p>
+                <p className="text-xs text-muted-foreground/60 mt-1">
+                  You&apos;re all caught up!
+                </p>
+              </div>
+            ) : (
+              <>
+                <ScrollArea className="max-h-80">
+                  <div className="p-2">
+                    {notifications.slice(0, 6).map((notification) => (
+                      <HeaderNotificationItem
+                        key={notification.id}
+                        notification={notification}
+                        onOpen={() => void openNotification(notification)}
+                      />
+                    ))}
+                  </div>
+                </ScrollArea>
+                <div className="border-t border-border p-2">
+                  <button
+                    onClick={() => router.push("/notifications")}
+                    className="h-8 w-full rounded-lg text-xs font-semibold text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                  >
+                    View all notifications
+                  </button>
+                </div>
+              </>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
 
@@ -220,3 +280,56 @@ function AppHeader() {
 }
 
 export default AppHeader;
+
+function HeaderNotificationItem({
+  notification,
+  onOpen,
+}: {
+  notification: Notification;
+  onOpen: () => void;
+}) {
+  const Icon = NOTIFICATION_ICONS[notification.type] ?? Bell;
+  const isUnread = !notification.isRead;
+
+  return (
+    <button
+      onClick={onOpen}
+      className={cn(
+        "flex w-full items-start gap-3 rounded-lg px-2.5 py-2.5 text-left transition-colors",
+        isUnread ? "bg-primary/5 hover:bg-primary/10" : "hover:bg-muted",
+      )}
+    >
+      <div
+        className={cn(
+          "mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-md",
+          notification.type === "CRITICAL_VULN"
+            ? "bg-red-500/10 text-red-500"
+            : "bg-muted text-muted-foreground",
+        )}
+      >
+        <Icon className="size-3.5" />
+      </div>
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-2">
+          <p
+            className={cn(
+              "truncate text-xs leading-5",
+              isUnread
+                ? "font-bold text-foreground"
+                : "font-medium text-muted-foreground",
+            )}
+          >
+            {notification.type.replace(/_/g, " ")}
+          </p>
+          {isUnread && <span className="size-1.5 rounded-full bg-primary" />}
+        </div>
+        <p className="line-clamp-2 text-xs leading-4 text-muted-foreground">
+          {notification.message}
+        </p>
+        <time className="mt-1 block text-[10px] font-medium text-muted-foreground/60">
+          {formatRelativeTime(notification.createdAt)}
+        </time>
+      </div>
+    </button>
+  );
+}

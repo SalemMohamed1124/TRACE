@@ -1,17 +1,25 @@
 "use client";
 
-import type { Notification } from "@/types";
+import type { Notification, NotificationType } from "@/types";
 import { cn } from "@/lib/utils";
 import { 
   CheckCircle, XCircle, Sparkles, AlertTriangle, Bell, 
   Check
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { useMarkAsRead } from "./useNotificationMutations";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { format } from "date-fns";
 
-const TYPE_CONFIG: Record<string, any> = {
+interface NotificationTypeConfig {
+  icon: LucideIcon;
+  color: string;
+  bg: string;
+  label: string;
+}
+
+const TYPE_CONFIG: Record<NotificationType, NotificationTypeConfig> = {
   SCAN_COMPLETE: { icon: CheckCircle, color: "text-emerald-500", bg: "bg-emerald-500/10", label: "Scan Complete" },
   SCAN_FAILED: { icon: XCircle, color: "text-red-500", bg: "bg-red-500/10", label: "Scan Failed" },
   AI_ANALYSIS_READY: { icon: Sparkles, color: "text-primary", bg: "bg-primary/10", label: "AI Analysis Ready" },

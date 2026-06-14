@@ -5,7 +5,11 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Scan } from '../scans/scan.entity.js';
 import { ScanFinding } from '../findings/scan-finding.entity.js';
 import { Vulnerability } from '../findings/vulnerability.entity.js';
-import { ScanStatus, AssetType } from '../../common/enums/index.js';
+import {
+  AssetType,
+  ScanStatus,
+  SeverityLevel,
+} from '../../common/enums/index.js';
 import {
   ScriptRunnerService,
   ScanCancelledError,
@@ -282,6 +286,10 @@ export class ScanOrchestratorService {
         orgId: jobData.orgId,
         assetId: jobData.assetId,
         findingsCount: aggregated.length,
+        criticalCount: this.countFindingsBySeverity(
+          aggregated,
+          SeverityLevel.CRITICAL,
+        ),
       });
 
       this.logger.log(
@@ -300,6 +308,12 @@ export class ScanOrchestratorService {
       );
       await this.updateScanStatus(scanId, ScanStatus.FAILED);
       this.emitProgress(scanId, -1, 'Scan failed');
+      this.eventEmitter.emit('scan.failed', {
+        scanId,
+        orgId: jobData.orgId,
+        assetId: jobData.assetId,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
       throw error;
     } finally {
       this.scriptRunner.clearSignal(scanId);
@@ -836,6 +850,10 @@ export class ScanOrchestratorService {
         orgId: jobData.orgId,
         assetId: jobData.assetId,
         findingsCount: aggregated.length,
+        criticalCount: this.countFindingsBySeverity(
+          aggregated,
+          SeverityLevel.CRITICAL,
+        ),
       });
 
       this.logger.log(
@@ -854,6 +872,12 @@ export class ScanOrchestratorService {
       );
       await this.updateScanStatus(scanId, ScanStatus.FAILED);
       this.emitProgress(scanId, -1, 'Scan failed');
+      this.eventEmitter.emit('scan.failed', {
+        scanId,
+        orgId: jobData.orgId,
+        assetId: jobData.assetId,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
       throw error;
     } finally {
       this.scriptRunner.clearSignal(scanId);
@@ -953,6 +977,13 @@ export class ScanOrchestratorService {
         );
       }
     }
+  }
+
+  private countFindingsBySeverity(
+    findings: AggregatedFinding[],
+    severity: SeverityLevel,
+  ): number {
+    return findings.filter((finding) => finding.severity === severity).length;
   }
 
   private getDefaultDescription(
