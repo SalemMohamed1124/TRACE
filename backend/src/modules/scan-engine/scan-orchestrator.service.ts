@@ -25,7 +25,7 @@ export interface ScanJobData {
   assetType: AssetType;
   scanType: 'QUICK' | 'DEEP';
   orgId: string;
-  initiatedBy: string;
+  initiatedBy: string | null;
   cookies?: string;
   customHeaders?: string;
 }

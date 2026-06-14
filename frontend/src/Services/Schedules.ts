@@ -1,5 +1,10 @@
 import api from "@/lib/api";
-import type { ScanSchedule, Asset, CreateSchedulePayload } from "@/types";
+import type {
+  ScanSchedule,
+  Asset,
+  CreateSchedulePayload,
+  UpdateSchedulePayload,
+} from "@/types";
 
 export const fetchSchedules = async () => {
   const { data } = await api.get("/api/scan-schedules");
@@ -18,8 +23,14 @@ export const createSchedule = async (payload: CreateSchedulePayload) => {
   return data;
 };
 
-export const updateSchedule = async (id: string, updatedSchedule: Partial<ScanSchedule>) => {
-  const { data } = await api.patch(`/api/scan-schedules/${id}`, updatedSchedule);
+export const updateSchedule = async (
+  id: string,
+  updatedSchedule: UpdateSchedulePayload,
+) => {
+  const { data } = await api.patch(
+    `/api/scan-schedules/${id}`,
+    updatedSchedule,
+  );
   return data;
 };
 

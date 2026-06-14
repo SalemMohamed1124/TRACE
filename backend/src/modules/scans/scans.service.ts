@@ -12,7 +12,11 @@ import Bull from 'bull';
 import { Scan } from './scan.entity.js';
 import { ScanFinding } from '../findings/scan-finding.entity.js';
 import { Asset } from '../assets/asset.entity.js';
-import { ScanStatus, ScanType, SeverityLevel } from '../../common/enums/index.js';
+import {
+  ScanStatus,
+  ScanType,
+  SeverityLevel,
+} from '../../common/enums/index.js';
 import { CreateScanDto } from './dto/create-scan.dto.js';
 import { BulkCreateScanDto } from './dto/bulk-create-scan.dto.js';
 
@@ -58,8 +62,9 @@ export class ScansService {
 
   async createScan(
     orgId: string,
-    userId: string,
+    userId: string | null,
     dto: CreateScanDto,
+    options: { isScheduled?: boolean } = {},
   ): Promise<Scan> {
     // 1. Validate asset belongs to org
     const asset = await this.assetRepo.findOne({
@@ -93,6 +98,7 @@ export class ScansService {
       assetId: dto.assetId,
       orgId,
       initiatedBy: userId,
+      isScheduled: options.isScheduled ?? false,
     });
 
     const savedScan = await this.scanRepo.save(scan);
@@ -132,9 +138,7 @@ export class ScansService {
         `Failed to enqueue scan ${savedScan.id}: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
 
-      throw new BadRequestException(
-        'Failed to start scan. Please try again.',
-      );
+      throw new BadRequestException('Failed to start scan. Please try again.');
     }
 
     return savedScan;
@@ -161,7 +165,10 @@ export class ScansService {
       const asset = assetMap.get(assetId);
 
       if (!asset) {
-        errors.push({ assetId, reason: 'Asset not found in this organization' });
+        errors.push({
+          assetId,
+          reason: 'Asset not found in this organization',
+        });
         continue;
       }
 
@@ -297,7 +304,10 @@ export class ScansService {
     }
 
     // Don't allow deleting running scans — cancel first
-    if (scan.status === ScanStatus.RUNNING || scan.status === ScanStatus.PENDING) {
+    if (
+      scan.status === ScanStatus.RUNNING ||
+      scan.status === ScanStatus.PENDING
+    ) {
       throw new BadRequestException(
         'Cannot delete a running or pending scan. Cancel it first.',
       );
@@ -398,10 +408,7 @@ export class ScansService {
     }));
   }
 
-  async getRawOutput(
-    scanId: string,
-    orgId: string,
-  ): Promise<string> {
+  async getRawOutput(scanId: string, orgId: string): Promise<string> {
     const scan = await this.scanRepo.findOne({
       where: { id: scanId, orgId },
     });
@@ -434,7 +441,9 @@ export class ScansService {
 
     for (const finding of findings) {
       lines.push('');
-      lines.push(`[${finding.vulnerability?.severity ?? 'UNKNOWN'}] ${finding.vulnerability?.name ?? 'Unknown'}`);
+      lines.push(
+        `[${finding.vulnerability?.severity ?? 'UNKNOWN'}] ${finding.vulnerability?.name ?? 'Unknown'}`,
+      );
       lines.push(`  Location: ${finding.location}`);
       lines.push(`  Category: ${finding.vulnerability?.category ?? 'N/A'}`);
       if (finding.evidence) {
@@ -443,7 +452,9 @@ export class ScansService {
       if (finding.rawOutput) {
         try {
           const parsed = JSON.parse(finding.rawOutput);
-          lines.push(`  Details: ${JSON.stringify(parsed, null, 2).split('\n').join('\n  ')}`);
+          lines.push(
+            `  Details: ${JSON.stringify(parsed, null, 2).split('\n').join('\n  ')}`,
+          );
         } catch {
           lines.push(`  Raw: ${finding.rawOutput}`);
         }
@@ -453,10 +464,7 @@ export class ScansService {
     return lines.join('\n');
   }
 
-  async updateStatus(
-    scanId: string,
-    status: ScanStatus,
-  ): Promise<void> {
+  async updateStatus(scanId: string, status: ScanStatus): Promise<void> {
     const updateData: Record<string, unknown> = { status };
 
     if (status === ScanStatus.RUNNING) {
@@ -486,9 +494,12 @@ export class ScansService {
     const asset = await this.assetRepo.findOne({ where: { id: scan.assetId } });
 
     // Read live progress from in-memory store for running scans
-    const liveProgress = scan.status === 'RUNNING'
-      ? (scanProgressStore.get(scan.id)?.progress ?? 0)
-      : scan.status === 'COMPLETED' ? 100 : 0;
+    const liveProgress =
+      scan.status === 'RUNNING'
+        ? (scanProgressStore.get(scan.id)?.progress ?? 0)
+        : scan.status === 'COMPLETED'
+          ? 100
+          : 0;
 
     return {
       id: scan.id,
@@ -504,7 +515,14 @@ export class ScansService {
       findingsCount,
       progress: liveProgress,
       severityCounts,
-      asset: asset ? { id: asset.id, name: asset.name, value: asset.value, type: asset.type } : undefined,
+      asset: asset
+        ? {
+            id: asset.id,
+            name: asset.name,
+            value: asset.value,
+            type: asset.type,
+          }
+        : undefined,
       findingsSummary: {
         critical: severityCounts.critical,
         high: severityCounts.high,
@@ -515,9 +533,7 @@ export class ScansService {
     };
   }
 
-  private async getSeverityCounts(
-    scanId: string,
-  ): Promise<SeverityCountsDto> {
+  private async getSeverityCounts(scanId: string): Promise<SeverityCountsDto> {
     const counts = await this.findingRepo
       .createQueryBuilder('sf')
       .innerJoin('sf.vulnerability', 'v')

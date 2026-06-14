@@ -202,6 +202,7 @@ export interface ScanSchedule {
   id: string;
   assetId: string;
   frequency: "DAILY" | "WEEKLY" | "MONTHLY";
+  timeOfDay: string;
   nextRunAt: string;
   isActive: boolean;
   scanType: ScanType;
@@ -265,8 +266,12 @@ export interface CreateSchedulePayload {
   assetId: string;
   scanType: ScanType;
   frequency: "DAILY" | "WEEKLY" | "MONTHLY";
-  nextRunAt: string;
+  scheduledTime: string;
 }
+
+export type UpdateSchedulePayload = Partial<CreateSchedulePayload> & {
+  isActive?: boolean;
+};
 
 export interface ChangePasswordPayload {
   currentPassword: string;

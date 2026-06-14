@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { BullModule } from '@nestjs/bull';
+import { ScheduleModule } from '@nestjs/schedule';
 import { APP_GUARD } from '@nestjs/core';
 import { typeOrmConfig } from './config/typeorm.config.js';
 import { redisConfig } from './config/redis.config.js';
@@ -35,6 +36,7 @@ import { RolesGuard } from './common/guards/roles.guard.js';
     TypeOrmModule.forRootAsync(typeOrmConfig),
     EventEmitterModule.forRoot(),
     BullModule.forRootAsync(redisConfig),
+    ScheduleModule.forRoot(),
     TypeOrmModule.forFeature([OrganizationMember]),
     AuthModule,
     UsersModule,
