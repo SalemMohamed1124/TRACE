@@ -61,8 +61,78 @@ export class OrganizationsService {
     private readonly userRepo: Repository<User>,
   ) {}
 
-  async createOrganization(userId: string, dto: CreateOrgDto): Promise<Organization> {
-    const org = this.orgRepo.create({ name: dto.name });
+  private normalizeOrgName(name: string): string {
+    return name.trim().toLowerCase();
+  }
+
+  private cleanOrgName(name: string): string {
+    if (typeof name !== 'string') {
+      throw new BadRequestException('Organization name is required');
+    }
+
+    const cleanName = name.trim();
+    if (!cleanName) {
+      throw new BadRequestException('Organization name is required');
+    }
+    return cleanName;
+  }
+
+  private async assertAdmin(
+    orgId: string,
+    userId: string,
+  ): Promise<OrganizationMember> {
+    const member = await this.memberRepo.findOne({
+      where: { userId, orgId, role: UserRole.ADMIN },
+    });
+
+    if (!member) {
+      throw new ForbiddenException('Only admins can manage this organization');
+    }
+
+    return member;
+  }
+
+  private async assertUniqueOrgNameForUser(
+    userId: string,
+    name: string,
+    excludeOrgId?: string,
+  ): Promise<void> {
+    const normalizedName = this.normalizeOrgName(name);
+    const memberships = await this.memberRepo.find({
+      where: { userId },
+      relations: ['organization'],
+    });
+
+    const duplicate = memberships.find(
+      (member) =>
+        member.orgId !== excludeOrgId &&
+        this.normalizeOrgName(member.organization.name) === normalizedName,
+    );
+
+    if (duplicate) {
+      throw new ConflictException(
+        'You already have an organization with this name',
+      );
+    }
+  }
+
+  private toOrgWithRole(org: Organization, role: UserRole): OrgWithRole {
+    return {
+      id: org.id,
+      name: org.name,
+      role,
+      createdAt: org.createdAt,
+    };
+  }
+
+  async createOrganization(
+    userId: string,
+    dto: CreateOrgDto,
+  ): Promise<OrgWithRole> {
+    const name = this.cleanOrgName(dto.name);
+    await this.assertUniqueOrgNameForUser(userId, name);
+
+    const org = this.orgRepo.create({ name });
     const savedOrg = await this.orgRepo.save(org);
 
     const member = this.memberRepo.create({
@@ -72,7 +142,7 @@ export class OrganizationsService {
     });
     await this.memberRepo.save(member);
 
-    return savedOrg;
+    return this.toOrgWithRole(savedOrg, UserRole.ADMIN);
   }
 
   async getUserOrganizations(userId: string): Promise<OrgWithRole[]> {
@@ -90,7 +160,10 @@ export class OrganizationsService {
     }));
   }
 
-  async switchOrganization(userId: string, orgId: string): Promise<SwitchOrgResponse> {
+  async switchOrganization(
+    userId: string,
+    orgId: string,
+  ): Promise<SwitchOrgResponse> {
     const member = await this.memberRepo.findOne({
       where: { userId, orgId },
       relations: ['organization'],
@@ -110,13 +183,22 @@ export class OrganizationsService {
     };
   }
 
-  async updateOrganization(orgId: string, name: string): Promise<Organization> {
+  async updateOrganization(
+    orgId: string,
+    userId: string,
+    name: string,
+  ): Promise<OrgWithRole> {
+    const cleanName = this.cleanOrgName(name);
+    const member = await this.assertAdmin(orgId, userId);
+    await this.assertUniqueOrgNameForUser(userId, cleanName, orgId);
+
     const org = await this.orgRepo.findOne({ where: { id: orgId } });
     if (!org) {
       throw new NotFoundException('Organization not found');
     }
-    org.name = name;
-    return this.orgRepo.save(org);
+    org.name = cleanName;
+    const savedOrg = await this.orgRepo.save(org);
+    return this.toOrgWithRole(savedOrg, member.role);
   }
 
   async deleteOrganization(orgId: string, userId: string): Promise<void> {
@@ -125,19 +207,20 @@ export class OrganizationsService {
       throw new NotFoundException('Organization not found');
     }
 
-    // Verify user is admin
-    const member = await this.memberRepo.findOne({
-      where: { userId, orgId, role: UserRole.ADMIN },
-    });
-    if (!member) {
-      throw new ForbiddenException('Only admins can delete organizations');
+    await this.assertAdmin(orgId, userId);
+
+    const orgCount = await this.memberRepo.count({ where: { userId } });
+    if (orgCount <= 1) {
+      throw new BadRequestException('Cannot delete your last organization');
     }
 
     // CASCADE will clean up members, assets, scans, etc.
     await this.orgRepo.remove(org);
   }
 
-  async getMembers(orgId: string): Promise<MemberInfo[]> {
+  async getMembers(orgId: string, userId: string): Promise<MemberInfo[]> {
+    await this.assertAdmin(orgId, userId);
+
     const members = await this.memberRepo.find({
       where: { orgId },
       relations: ['user'],
@@ -156,7 +239,13 @@ export class OrganizationsService {
     }));
   }
 
-  async addMember(orgId: string, dto: AddMemberDto): Promise<MemberInfo> {
+  async addMember(
+    orgId: string,
+    userId: string,
+    dto: AddMemberDto,
+  ): Promise<MemberInfo> {
+    await this.assertAdmin(orgId, userId);
+
     // Check if org exists
     const org = await this.orgRepo.findOne({ where: { id: orgId } });
     if (!org) {
@@ -186,7 +275,9 @@ export class OrganizationsService {
     });
 
     if (existingMember) {
-      throw new ConflictException('User is already a member of this organization');
+      throw new ConflictException(
+        'User is already a member of this organization',
+      );
     }
 
     const member = this.memberRepo.create({
@@ -210,9 +301,12 @@ export class OrganizationsService {
 
   async updateMemberRole(
     orgId: string,
+    userId: string,
     memberId: string,
     dto: UpdateMemberRoleDto,
   ): Promise<MemberInfo> {
+    await this.assertAdmin(orgId, userId);
+
     const member = await this.memberRepo.findOne({
       where: { id: memberId, orgId },
       relations: ['user'],
@@ -229,7 +323,9 @@ export class OrganizationsService {
       });
 
       if (adminCount <= 1) {
-        throw new BadRequestException('Cannot demote the last admin of the organization');
+        throw new BadRequestException(
+          'Cannot demote the last admin of the organization',
+        );
       }
     }
 
@@ -248,7 +344,13 @@ export class OrganizationsService {
     };
   }
 
-  async removeMember(orgId: string, memberId: string): Promise<{ success: boolean }> {
+  async removeMember(
+    orgId: string,
+    userId: string,
+    memberId: string,
+  ): Promise<{ success: boolean }> {
+    await this.assertAdmin(orgId, userId);
+
     const member = await this.memberRepo.findOne({
       where: { id: memberId, orgId },
     });
@@ -264,7 +366,9 @@ export class OrganizationsService {
       });
 
       if (adminCount <= 1) {
-        throw new BadRequestException('Cannot remove the last admin of the organization');
+        throw new BadRequestException(
+          'Cannot remove the last admin of the organization',
+        );
       }
     }
 

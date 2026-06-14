@@ -125,6 +125,7 @@ export class AuthService {
     const members = await this.memberRepo.find({
       where: { userId: user.id },
       relations: ['organization'],
+      order: { joinedAt: 'ASC' },
     });
 
     const organizations: OrgWithRole[] = members.map((m) => ({
@@ -171,6 +172,7 @@ export class AuthService {
     const members = await this.memberRepo.find({
       where: { userId: user.id },
       relations: ['organization'],
+      order: { joinedAt: 'ASC' },
     });
 
     const organizations: OrgWithRole[] = members.map((m) => ({

@@ -1,13 +1,21 @@
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { setStoredUser, getStoredOrgs, setStoredOrgs } from "@/Services/auth";
+import {
+  setStoredUser,
+  getActiveOrgId,
+  getStoredOrgs,
+  setActiveOrgId,
+  setStoredOrgs,
+} from "@/Services/auth";
 import { notifyAuthChange } from "@/hooks/useAuth";
 import type { OrgRole, User } from "@/types";
 import {
   updateProfile as updateProfileApiReq,
   changePassword as changePasswordApiReq,
+  createOrganization as createOrgApiReq,
   updateOrganization as updateOrgApiReq,
   deleteOrganization as deleteOrgApiReq,
   updateMemberRole as updateRoleApiReq,
@@ -61,12 +69,14 @@ export function useUpdateOrganization() {
   const mutation = useMutation({
     mutationFn: ({ orgId, name }: { orgId: string; name: string }) =>
       updateOrgApiReq(orgId, name),
-    onSuccess: (_, { orgId, name }) => {
+    onSuccess: (updatedOrg, { orgId, name }) => {
       toast.success("Organization updated");
 
       const orgs = getStoredOrgs();
       const updatedOrgs = orgs.map((o) =>
-        o.id === orgId ? { ...o, name } : o,
+        o.id === orgId
+          ? { ...o, ...updatedOrg, name: updatedOrg?.name ?? name }
+          : o,
       );
       setStoredOrgs(updatedOrgs);
 
@@ -85,15 +95,54 @@ export function useUpdateOrganization() {
   };
 }
 
+export function useCreateOrganization() {
+  const queryClient = useQueryClient();
+  const router = useRouter();
+
+  const mutation = useMutation({
+    mutationFn: ({ name }: { name: string }) => createOrgApiReq(name),
+    onSuccess: (org) => {
+      toast.success("Organization created");
+
+      const orgs = getStoredOrgs();
+      const updatedOrgs = [...orgs.filter((o) => o.id !== org.id), org];
+      setStoredOrgs(updatedOrgs);
+      setActiveOrgId(org.id);
+
+      notifyAuthChange();
+      queryClient.invalidateQueries();
+      router.push("/overview");
+    },
+    onError: () => toast.error("Failed to create organization"),
+  });
+
+  return {
+    mutate: mutation.mutate,
+    mutateAsync: mutation.mutateAsync,
+    isPending: mutation.isPending,
+    isError: mutation.isError,
+    error: mutation.error,
+  };
+}
+
 export function useDeleteOrganization() {
+  const queryClient = useQueryClient();
+
   const mutation = useMutation({
     mutationFn: deleteOrgApiReq,
     onSuccess: (_, orgId) => {
       toast.success("Organization deleted");
 
       const orgs = getStoredOrgs();
-      setStoredOrgs(orgs.filter((o) => o.id !== orgId));
+      const remainingOrgs = orgs.filter((o) => o.id !== orgId);
+      setStoredOrgs(remainingOrgs);
 
+      if (getActiveOrgId() === orgId && remainingOrgs[0]) {
+        setActiveOrgId(remainingOrgs[0].id);
+      }
+
+      notifyAuthChange();
+      queryClient.invalidateQueries();
       window.location.href = "/overview";
     },
     onError: () => toast.error("Failed to delete organization"),

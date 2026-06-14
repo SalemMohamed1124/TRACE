@@ -9,7 +9,6 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
-  UseGuards,
 } from '@nestjs/common';
 import { OrganizationsService } from './organizations.service.js';
 import { CreateOrgDto } from './dto/create-org.dto.js';
@@ -17,9 +16,6 @@ import { AddMemberDto } from './dto/add-member.dto.js';
 import { UpdateMemberRoleDto } from './dto/update-member-role.dto.js';
 import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
 import type { JwtUser } from '../auth/decorators/current-user.decorator.js';
-import { Roles } from '../../common/decorators/roles.decorator.js';
-import { RolesGuard } from '../../common/guards/roles.guard.js';
-import { UserRole } from '../../common/enums/index.js';
 
 @Controller('organizations')
 export class OrganizationsController {
@@ -47,19 +43,20 @@ export class OrganizationsController {
   }
 
   @Patch(':orgId')
-  @UseGuards(RolesGuard)
-  @Roles(UserRole.ADMIN)
   @HttpCode(HttpStatus.OK)
   async updateOrganization(
     @Param('orgId', ParseUUIDPipe) orgId: string,
+    @CurrentUser() user: JwtUser,
     @Body('name') name: string,
   ) {
-    return this.organizationsService.updateOrganization(orgId, name);
+    return this.organizationsService.updateOrganization(
+      orgId,
+      user.userId,
+      name,
+    );
   }
 
   @Delete(':orgId')
-  @UseGuards(RolesGuard)
-  @Roles(UserRole.ADMIN)
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteOrganization(
     @Param('orgId', ParseUUIDPipe) orgId: string,
@@ -69,44 +66,47 @@ export class OrganizationsController {
   }
 
   @Get(':orgId/members')
-  @UseGuards(RolesGuard)
-  @Roles(UserRole.ADMIN)
   @HttpCode(HttpStatus.OK)
-  async getMembers(@Param('orgId', ParseUUIDPipe) orgId: string) {
-    return this.organizationsService.getMembers(orgId);
+  async getMembers(
+    @Param('orgId', ParseUUIDPipe) orgId: string,
+    @CurrentUser() user: JwtUser,
+  ) {
+    return this.organizationsService.getMembers(orgId, user.userId);
   }
 
   @Post(':orgId/members')
-  @UseGuards(RolesGuard)
-  @Roles(UserRole.ADMIN)
   @HttpCode(HttpStatus.CREATED)
   async addMember(
     @Param('orgId', ParseUUIDPipe) orgId: string,
+    @CurrentUser() user: JwtUser,
     @Body() dto: AddMemberDto,
   ) {
-    return this.organizationsService.addMember(orgId, dto);
+    return this.organizationsService.addMember(orgId, user.userId, dto);
   }
 
   @Patch(':orgId/members/:memberId')
-  @UseGuards(RolesGuard)
-  @Roles(UserRole.ADMIN)
   @HttpCode(HttpStatus.OK)
   async updateMemberRole(
     @Param('orgId', ParseUUIDPipe) orgId: string,
     @Param('memberId', ParseUUIDPipe) memberId: string,
+    @CurrentUser() user: JwtUser,
     @Body() dto: UpdateMemberRoleDto,
   ) {
-    return this.organizationsService.updateMemberRole(orgId, memberId, dto);
+    return this.organizationsService.updateMemberRole(
+      orgId,
+      user.userId,
+      memberId,
+      dto,
+    );
   }
 
   @Delete(':orgId/members/:memberId')
-  @UseGuards(RolesGuard)
-  @Roles(UserRole.ADMIN)
   @HttpCode(HttpStatus.OK)
   async removeMember(
     @Param('orgId', ParseUUIDPipe) orgId: string,
     @Param('memberId', ParseUUIDPipe) memberId: string,
+    @CurrentUser() user: JwtUser,
   ) {
-    return this.organizationsService.removeMember(orgId, memberId);
+    return this.organizationsService.removeMember(orgId, user.userId, memberId);
   }
 }

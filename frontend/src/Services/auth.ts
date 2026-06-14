@@ -79,8 +79,12 @@ export function handleAuthResponse(data: AuthResponse): void {
   setStoredUser(data.user);
   setStoredOrgs(data.organizations);
 
-  // Set first org as active if none set
-  if (!getActiveOrgId() && data.organizations.length > 0) {
+  const activeOrgId = getActiveOrgId();
+  const activeOrgExists = data.organizations.some(
+    (org) => org.id === activeOrgId,
+  );
+
+  if ((!activeOrgId || !activeOrgExists) && data.organizations.length > 0) {
     setActiveOrgId(data.organizations[0].id);
   }
 }
@@ -124,18 +128,45 @@ export async function logout(): Promise<void> {
   clearTokens();
 }
 
-export async function fetchMe(): Promise<User> {
-  const { data } = await api.get<User>("/api/auth/me");
-  setStoredUser(data);
+export async function fetchMe(): Promise<{
+  user: User;
+  organizations: Organization[];
+}> {
+  const { data } = await api.get<{ user: User; organizations: Organization[] }>(
+    "/api/auth/me",
+  );
+  setStoredUser(data.user);
+  setStoredOrgs(data.organizations);
+
+  const activeOrgId = getActiveOrgId();
+  const activeOrgExists = data.organizations.some(
+    (org) => org.id === activeOrgId,
+  );
+
+  if ((!activeOrgId || !activeOrgExists) && data.organizations.length > 0) {
+    setActiveOrgId(data.organizations[0].id);
+  }
+
   return data;
 }
 
-export async function requestPasswordReset(email: string): Promise<{ success: boolean }> {
-  const { data } = await api.post<{ success: boolean }>("/api/auth/forgot-password", { email });
+export async function requestPasswordReset(
+  email: string,
+): Promise<{ success: boolean }> {
+  const { data } = await api.post<{ success: boolean }>(
+    "/api/auth/forgot-password",
+    { email },
+  );
   return data;
 }
 
-export async function resetPassword(token: string, newPassword: string): Promise<{ success: boolean }> {
-  const { data } = await api.post<{ success: boolean }>("/api/auth/reset-password", { token, newPassword });
+export async function resetPassword(
+  token: string,
+  newPassword: string,
+): Promise<{ success: boolean }> {
+  const { data } = await api.post<{ success: boolean }>(
+    "/api/auth/reset-password",
+    { token, newPassword },
+  );
   return data;
 }
