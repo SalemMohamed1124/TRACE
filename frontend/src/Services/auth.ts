@@ -129,3 +129,13 @@ export async function fetchMe(): Promise<User> {
   setStoredUser(data);
   return data;
 }
+
+export async function requestPasswordReset(email: string): Promise<{ success: boolean }> {
+  const { data } = await api.post<{ success: boolean }>("/api/auth/forgot-password", { email });
+  return data;
+}
+
+export async function resetPassword(token: string, newPassword: string): Promise<{ success: boolean }> {
+  const { data } = await api.post<{ success: boolean }>("/api/auth/reset-password", { token, newPassword });
+  return data;
+}
