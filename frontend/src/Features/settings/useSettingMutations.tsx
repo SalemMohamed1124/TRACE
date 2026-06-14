@@ -21,6 +21,9 @@ import {
   updateMemberRole as updateRoleApiReq,
   removeMember as removeMemberApiReq,
   inviteMember as inviteMemberApiReq,
+  cancelOrgInvitation as cancelOrgInvitationApiReq,
+  acceptInvitation as acceptInvitationApiReq,
+  declineInvitation as declineInvitationApiReq,
 } from "@/Services/Settings";
 
 export function useUpdateProfile() {
@@ -221,9 +224,86 @@ export function useInviteMember() {
     }) => inviteMemberApiReq(orgId, payload),
     onSuccess: (_, { orgId }) => {
       toast.success("Invitation sent successfully");
-      queryClient.invalidateQueries({ queryKey: ["org-members", orgId] });
+      queryClient.invalidateQueries({ queryKey: ["org-invitations", orgId] });
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
     },
     onError: () => toast.error("Failed to invite member"),
+  });
+
+  return {
+    mutate: mutation.mutate,
+    mutateAsync: mutation.mutateAsync,
+    isPending: mutation.isPending,
+    isError: mutation.isError,
+    error: mutation.error,
+  };
+}
+
+export function useCancelOrgInvitation() {
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: ({
+      orgId,
+      invitationId,
+    }: {
+      orgId: string;
+      invitationId: string;
+    }) => cancelOrgInvitationApiReq(orgId, invitationId),
+    onSuccess: (_, { orgId }) => {
+      toast.success("Invitation cancelled");
+      queryClient.invalidateQueries({ queryKey: ["org-invitations", orgId] });
+    },
+    onError: () => toast.error("Failed to cancel invitation"),
+  });
+
+  return {
+    mutate: mutation.mutate,
+    mutateAsync: mutation.mutateAsync,
+    isPending: mutation.isPending,
+    isError: mutation.isError,
+    error: mutation.error,
+  };
+}
+
+export function useAcceptInvitation() {
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: acceptInvitationApiReq,
+    onSuccess: (org) => {
+      toast.success("Invitation accepted");
+
+      const orgs = getStoredOrgs();
+      setStoredOrgs([...orgs.filter((item) => item.id !== org.id), org]);
+      setActiveOrgId(org.id);
+      notifyAuthChange();
+
+      queryClient.invalidateQueries();
+    },
+    onError: () => toast.error("Failed to accept invitation"),
+  });
+
+  return {
+    mutate: mutation.mutate,
+    mutateAsync: mutation.mutateAsync,
+    isPending: mutation.isPending,
+    isError: mutation.isError,
+    error: mutation.error,
+  };
+}
+
+export function useDeclineInvitation() {
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: declineInvitationApiReq,
+    onSuccess: () => {
+      toast.success("Invitation declined");
+      queryClient.invalidateQueries({ queryKey: ["my-invitations"] });
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
+    },
+    onError: () => toast.error("Failed to decline invitation"),
   });
 
   return {

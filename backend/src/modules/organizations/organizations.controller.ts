@@ -13,6 +13,7 @@ import {
 import { OrganizationsService } from './organizations.service.js';
 import { CreateOrgDto } from './dto/create-org.dto.js';
 import { AddMemberDto } from './dto/add-member.dto.js';
+import { CreateInvitationDto } from './dto/create-invitation.dto.js';
 import { UpdateMemberRoleDto } from './dto/update-member-role.dto.js';
 import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
 import type { JwtUser } from '../auth/decorators/current-user.decorator.js';
@@ -40,6 +41,36 @@ export class OrganizationsController {
     @Body('orgId', ParseUUIDPipe) orgId: string,
   ) {
     return this.organizationsService.switchOrganization(user.userId, orgId);
+  }
+
+  @Get('me/invitations')
+  @HttpCode(HttpStatus.OK)
+  async getMyInvitations(@CurrentUser() user: JwtUser) {
+    return this.organizationsService.getMyInvitations(user.userId);
+  }
+
+  @Post('me/invitations/:invitationId/accept')
+  @HttpCode(HttpStatus.OK)
+  async acceptInvitation(
+    @Param('invitationId', ParseUUIDPipe) invitationId: string,
+    @CurrentUser() user: JwtUser,
+  ) {
+    return this.organizationsService.acceptInvitation(
+      invitationId,
+      user.userId,
+    );
+  }
+
+  @Post('me/invitations/:invitationId/decline')
+  @HttpCode(HttpStatus.OK)
+  async declineInvitation(
+    @Param('invitationId', ParseUUIDPipe) invitationId: string,
+    @CurrentUser() user: JwtUser,
+  ) {
+    return this.organizationsService.declineInvitation(
+      invitationId,
+      user.userId,
+    );
   }
 
   @Patch(':orgId')
@@ -82,6 +113,42 @@ export class OrganizationsController {
     @Body() dto: AddMemberDto,
   ) {
     return this.organizationsService.addMember(orgId, user.userId, dto);
+  }
+
+  @Get(':orgId/invitations')
+  @HttpCode(HttpStatus.OK)
+  async getOrganizationInvitations(
+    @Param('orgId', ParseUUIDPipe) orgId: string,
+    @CurrentUser() user: JwtUser,
+  ) {
+    return this.organizationsService.getOrganizationInvitations(
+      orgId,
+      user.userId,
+    );
+  }
+
+  @Post(':orgId/invitations')
+  @HttpCode(HttpStatus.CREATED)
+  async createInvitation(
+    @Param('orgId', ParseUUIDPipe) orgId: string,
+    @CurrentUser() user: JwtUser,
+    @Body() dto: CreateInvitationDto,
+  ) {
+    return this.organizationsService.createInvitation(orgId, user.userId, dto);
+  }
+
+  @Delete(':orgId/invitations/:invitationId')
+  @HttpCode(HttpStatus.OK)
+  async cancelInvitation(
+    @Param('orgId', ParseUUIDPipe) orgId: string,
+    @Param('invitationId', ParseUUIDPipe) invitationId: string,
+    @CurrentUser() user: JwtUser,
+  ) {
+    return this.organizationsService.cancelInvitation(
+      orgId,
+      user.userId,
+      invitationId,
+    );
   }
 
   @Patch(':orgId/members/:memberId')

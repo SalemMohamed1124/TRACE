@@ -21,6 +21,7 @@ import {
   Bell,
   Settings,
   Loader2,
+  MailPlus,
 } from "lucide-react";
 
 import {
@@ -53,6 +54,7 @@ import { useScanFormModals } from "@/Features/scans/useScanFormModals";
 import { useScheduleFormModals } from "@/Features/schedule/useScheduleFormModals";
 import { useReportFormModals } from "@/Features/reports/useReportFormModals";
 import { useCreateOrganization } from "@/Features/settings/useSettingMutations";
+import { useMyInvitations } from "@/Features/settings/useSettings";
 import { NAV_LINKS } from "@/Constants/NAV_LINKS";
 
 // ─────────────────────────────────────────────────────────
@@ -368,6 +370,7 @@ function SidebarFooter() {
   const { setTheme, theme } = useTheme();
   const router = useRouter();
   const { close, isMobile } = useAppSidebar();
+  const { pendingCount: pendingInvitationCount } = useMyInvitations();
   const [open, setOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
 
@@ -472,6 +475,25 @@ function SidebarFooter() {
               ))}
             </div>
           </ScrollArea>
+
+          <DropdownMenuSeparator className="my-1" />
+
+          <DropdownMenuItem
+            className="gap-2 text-xs rounded-lg px-2 py-2 text-muted-foreground hover:text-foreground cursor-pointer"
+            onClick={() => {
+              router.push("/invitations");
+              setOpen(false);
+              close();
+            }}
+          >
+            <MailPlus className="size-3.5" />
+            <span className="flex-1">Invitations</span>
+            {pendingInvitationCount > 0 && (
+              <span className="rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-bold text-primary-foreground">
+                {pendingInvitationCount}
+              </span>
+            )}
+          </DropdownMenuItem>
 
           <DropdownMenuSeparator className="my-1" />
 

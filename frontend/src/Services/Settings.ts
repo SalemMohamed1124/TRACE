@@ -1,6 +1,7 @@
 import api from "@/lib/api";
 import type {
   Organization,
+  OrganizationInvitation,
   OrgMember,
   OrgRole,
   ChangePasswordPayload,
@@ -50,5 +51,34 @@ export async function inviteMember(
   orgId: string,
   payload: { email: string; role: OrgRole },
 ) {
-  await api.post(`/api/organizations/${orgId}/members`, payload);
+  const { data } = await api.post(
+    `/api/organizations/${orgId}/invitations`,
+    payload,
+  );
+  return data as OrganizationInvitation;
+}
+
+export async function fetchOrgInvitations(orgId: string) {
+  const { data } = await api.get(`/api/organizations/${orgId}/invitations`);
+  return data as OrganizationInvitation[];
+}
+
+export async function cancelOrgInvitation(orgId: string, invitationId: string) {
+  await api.delete(`/api/organizations/${orgId}/invitations/${invitationId}`);
+}
+
+export async function fetchMyInvitations() {
+  const { data } = await api.get("/api/organizations/me/invitations");
+  return data as OrganizationInvitation[];
+}
+
+export async function acceptInvitation(invitationId: string) {
+  const { data } = await api.post(
+    `/api/organizations/me/invitations/${invitationId}/accept`,
+  );
+  return data as Organization;
+}
+
+export async function declineInvitation(invitationId: string) {
+  await api.post(`/api/organizations/me/invitations/${invitationId}/decline`);
 }

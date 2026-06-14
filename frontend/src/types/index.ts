@@ -33,7 +33,8 @@ export type NotificationType =
   | "SCAN_COMPLETE"
   | "SCAN_FAILED"
   | "AI_ANALYSIS_READY"
-  | "CRITICAL_VULN";
+  | "CRITICAL_VULN"
+  | "ORG_INVITATION";
 
 export interface User {
   id: string;
@@ -66,6 +67,35 @@ export interface OrgMember {
     name: string;
     email: string;
   };
+}
+
+export type OrganizationInvitationStatus =
+  | "PENDING"
+  | "ACCEPTED"
+  | "DECLINED"
+  | "CANCELLED";
+
+export interface OrganizationInvitation {
+  id: string;
+  email: string;
+  role: OrgRole;
+  status: OrganizationInvitationStatus;
+  createdAt: string;
+  updatedAt: string;
+  organization: {
+    id: string;
+    name: string;
+  };
+  invitedUser: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  invitedBy: {
+    id: string;
+    name: string;
+    email: string;
+  } | null;
 }
 
 export interface Asset {
@@ -207,6 +237,7 @@ export interface NotificationMetadata {
   organizationId?: string;
   scanId?: string;
   assetId?: string;
+  invitationId?: string;
   projectId?: string;
   severity?: Severity;
   findingsCount?: number;

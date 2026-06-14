@@ -12,6 +12,7 @@ export interface NotificationMetadata {
   organizationId?: string;
   scanId?: string;
   assetId?: string;
+  invitationId?: string;
   projectId?: string;
   severity?: SeverityLevel;
   findingsCount?: number;

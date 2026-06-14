@@ -12,6 +12,7 @@ import {
   XCircle,
   Sparkles,
   AlertTriangle,
+  MailPlus,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
@@ -32,6 +33,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useNotifications } from "@/Features/notifications/useNotifications";
 import { useNotificationNavigation } from "@/Features/notifications/useNotificationNavigation";
+import { useMyInvitations } from "@/Features/settings/useSettings";
 import type { Notification, NotificationType } from "@/types";
 import { cn, formatRelativeTime } from "@/lib/utils";
 
@@ -40,6 +42,7 @@ const NOTIFICATION_ICONS: Record<NotificationType, LucideIcon> = {
   SCAN_FAILED: XCircle,
   AI_ANALYSIS_READY: Sparkles,
   CRITICAL_VULN: AlertTriangle,
+  ORG_INVITATION: MailPlus,
 };
 
 // ─────────────────────────────────────────────────────────
@@ -55,6 +58,7 @@ function AppHeader() {
     unreadCount,
     isPending: isNotificationsPending,
   } = useNotifications();
+  const { pendingCount: pendingInvitationCount } = useMyInvitations();
   const openNotification = useNotificationNavigation();
 
   const handleSwitchOrganization = (orgId: string) => {
@@ -254,6 +258,21 @@ function AppHeader() {
                 ))}
               </div>
             </ScrollArea>
+
+            <DropdownMenuSeparator className="my-1" />
+
+            <DropdownMenuItem
+              className="gap-2 text-xs rounded-lg px-2 py-2 text-muted-foreground hover:text-foreground cursor-pointer"
+              onClick={() => router.push("/invitations")}
+            >
+              <MailPlus className="size-3.5" />
+              <span className="flex-1">Invitations</span>
+              {pendingInvitationCount > 0 && (
+                <span className="rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-bold text-primary-foreground">
+                  {pendingInvitationCount}
+                </span>
+              )}
+            </DropdownMenuItem>
 
             <DropdownMenuSeparator className="my-1" />
 

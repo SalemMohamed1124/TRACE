@@ -10,6 +10,7 @@ import {
   Sparkles,
   AlertTriangle,
   Bell,
+  MailPlus,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { formatRelativeTime } from "@/lib/utils";
@@ -21,6 +22,7 @@ const ICON_MAP: Record<NotificationType, LucideIcon> = {
   SCAN_FAILED: XCircle,
   AI_ANALYSIS_READY: Sparkles,
   CRITICAL_VULN: AlertTriangle,
+  ORG_INVITATION: MailPlus,
 };
 
 export const NotificationColumns: ColumnDef<Notification, unknown>[] = [

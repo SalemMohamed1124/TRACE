@@ -2,9 +2,14 @@
 
 import type { Notification, NotificationType } from "@/types";
 import { cn } from "@/lib/utils";
-import { 
-  CheckCircle, XCircle, Sparkles, AlertTriangle, Bell, 
-  Check
+import {
+  CheckCircle,
+  XCircle,
+  Sparkles,
+  AlertTriangle,
+  Bell,
+  Check,
+  MailPlus,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useMarkAsRead } from "./useNotificationMutations";
@@ -20,24 +25,61 @@ interface NotificationTypeConfig {
 }
 
 const TYPE_CONFIG: Record<NotificationType, NotificationTypeConfig> = {
-  SCAN_COMPLETE: { icon: CheckCircle, color: "text-emerald-500", bg: "bg-emerald-500/10", label: "Scan Complete" },
-  SCAN_FAILED: { icon: XCircle, color: "text-red-500", bg: "bg-red-500/10", label: "Scan Failed" },
-  AI_ANALYSIS_READY: { icon: Sparkles, color: "text-primary", bg: "bg-primary/10", label: "AI Analysis Ready" },
-  CRITICAL_VULN: { icon: AlertTriangle, color: "text-red-500", bg: "bg-red-500/10", label: "Critical Vulnerability" },
+  SCAN_COMPLETE: {
+    icon: CheckCircle,
+    color: "text-emerald-500",
+    bg: "bg-emerald-500/10",
+    label: "Scan Complete",
+  },
+  SCAN_FAILED: {
+    icon: XCircle,
+    color: "text-red-500",
+    bg: "bg-red-500/10",
+    label: "Scan Failed",
+  },
+  AI_ANALYSIS_READY: {
+    icon: Sparkles,
+    color: "text-primary",
+    bg: "bg-primary/10",
+    label: "AI Analysis Ready",
+  },
+  CRITICAL_VULN: {
+    icon: AlertTriangle,
+    color: "text-red-500",
+    bg: "bg-red-500/10",
+    label: "Critical Vulnerability",
+  },
+  ORG_INVITATION: {
+    icon: MailPlus,
+    color: "text-primary",
+    bg: "bg-primary/10",
+    label: "Organization Invitation",
+  },
 };
 
-export default function NotificationCard({ notification }: { notification: Notification }) {
+export default function NotificationCard({
+  notification,
+}: {
+  notification: Notification;
+}) {
   const { mutate: markReadApi, isPending: isMarkReadPending } = useMarkAsRead();
   const isUnread = !notification.isRead;
-  const config = TYPE_CONFIG[notification.type] || { icon: Bell, color: "text-muted-foreground", bg: "bg-muted/30" };
+  const config = TYPE_CONFIG[notification.type] || {
+    icon: Bell,
+    color: "text-muted-foreground",
+    bg: "bg-muted/30",
+  };
   const Icon = config.icon;
 
   const cardStyles = cn(
     "group flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-3.5 border transition-all cursor-pointer",
-    isUnread ? "bg-primary/2 border-primary/20 shadow-sm" : "bg-card border-border/50 hover:bg-muted/30"
+    isUnread
+      ? "bg-primary/2 border-primary/20 shadow-sm"
+      : "bg-card border-border/50 hover:bg-muted/30",
   );
 
-  const buttonStyles = "h-8 text-xs font-bold gap-2 text-primary hover:text-primary hover:bg-primary/10 transition-all";
+  const buttonStyles =
+    "h-8 text-xs font-bold gap-2 text-primary hover:text-primary hover:bg-primary/10 transition-all";
 
   return (
     <div className={cardStyles}>
@@ -51,9 +93,7 @@ export default function NotificationCard({ notification }: { notification: Notif
             <h4 className="text-sm font-bold text-foreground">
               {config.label || notification.type.replace(/_/g, " ")}
             </h4>
-            {isUnread && (
-              <span className="size-2 bg-primary" />
-            )}
+            {isUnread && <span className="size-2 bg-primary" />}
           </div>
           <p className="text-sm text-muted-foreground whitespace-normal wrap-break-word mb-1">
             {notification.message}
@@ -76,7 +116,11 @@ export default function NotificationCard({ notification }: { notification: Notif
             }}
             disabled={isMarkReadPending}
           >
-            {isMarkReadPending ? <Spinner className="size-3" /> : <Check className="size-3" />}
+            {isMarkReadPending ? (
+              <Spinner className="size-3" />
+            ) : (
+              <Check className="size-3" />
+            )}
             Confirm Read
           </Button>
         )}

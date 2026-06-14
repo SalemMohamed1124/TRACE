@@ -55,6 +55,14 @@ export enum NotificationType {
   SCAN_FAILED = 'SCAN_FAILED',
   AI_ANALYSIS_READY = 'AI_ANALYSIS_READY',
   CRITICAL_VULN = 'CRITICAL_VULN',
+  ORG_INVITATION = 'ORG_INVITATION',
+}
+
+export enum OrganizationInvitationStatus {
+  PENDING = 'PENDING',
+  ACCEPTED = 'ACCEPTED',
+  DECLINED = 'DECLINED',
+  CANCELLED = 'CANCELLED',
 }
 
 export enum AIAnalysisStatus {

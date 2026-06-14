@@ -8,6 +8,8 @@ import type { Notification } from "@/types";
 import { useMarkAsRead } from "./useNotificationMutations";
 
 export function getNotificationHref(notification: Notification): string | null {
+  if (notification.metadata?.invitationId) return "/invitations";
+
   const scanId = notification.metadata?.scanId;
   if (scanId) return `/scans/${scanId}`;
 
@@ -32,9 +34,18 @@ export function useNotificationNavigation() {
 
       const targetOrgId = notification.metadata?.organizationId;
       if (targetOrgId && targetOrgId !== activeOrgId) {
-        const canAccessOrg = organizations.some((org) => org.id === targetOrgId);
+        if (notification.metadata?.invitationId) {
+          router.push(href);
+          return;
+        }
+
+        const canAccessOrg = organizations.some(
+          (org) => org.id === targetOrgId,
+        );
         if (!canAccessOrg) {
-          toast.error("You no longer have access to this notification's organization");
+          toast.error(
+            "You no longer have access to this notification's organization",
+          );
           return;
         }
 
