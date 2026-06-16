@@ -1,7 +1,18 @@
-import { Controller, Get, Post, Patch, Delete, Param, Body, Req } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Param,
+  Body,
+  Req,
+} from '@nestjs/common';
 import { Roles } from '../../common/decorators/roles.decorator.js';
 import { UserRole } from '../../common/enums/index.js';
 import { SchedulesService } from './schedules.service.js';
+import { CreateScheduleDto } from './dto/create-schedule.dto.js';
+import { UpdateScheduleDto } from './dto/update-schedule.dto.js';
 
 @Controller('scan-schedules')
 @Roles(UserRole.ADMIN, UserRole.EDITOR, UserRole.VIEWER)
@@ -17,10 +28,10 @@ export class SchedulesController {
 
   @Post()
   @Roles(UserRole.ADMIN, UserRole.EDITOR)
-  async create(@Req() req: any, @Body() dto: { assetId: string; frequency: string; scanType?: string }) {
+  async create(@Req() req: any, @Body() dto: CreateScheduleDto) {
     const orgId: string = req.orgContext!.orgId;
     const userId: string = req.user.userId;
-    return this.schedulesService.create(orgId, userId, dto as any);
+    return this.schedulesService.create(orgId, userId, dto);
   }
 
   @Patch(':id')
@@ -28,10 +39,10 @@ export class SchedulesController {
   async update(
     @Param('id') id: string,
     @Req() req: any,
-    @Body() dto: { isActive?: boolean; frequency?: string },
+    @Body() dto: UpdateScheduleDto,
   ) {
     const orgId: string = req.orgContext!.orgId;
-    return this.schedulesService.update(id, orgId, dto as any);
+    return this.schedulesService.update(id, orgId, dto);
   }
 
   @Delete(':id')

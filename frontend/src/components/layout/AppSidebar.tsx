@@ -2,17 +2,16 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import type { FormEvent } from "react";
 import { useState } from "react";
 
 import {
   LogOut,
-  BadgeCheck,
   ArrowRightLeft,
   Check,
   Sun,
   Moon,
   Monitor,
-  Shield,
   ChevronDown,
   Plus,
   Upload,
@@ -21,6 +20,8 @@ import {
   FileText,
   Bell,
   Settings,
+  Loader2,
+  MailPlus,
 } from "lucide-react";
 
 import {
@@ -31,8 +32,17 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 
 import { useAppSidebar } from "@/Contexts/AppSidebarContext";
 import { useAuth } from "@/hooks/useAuth";
@@ -43,6 +53,8 @@ import { useAssetFormModals } from "@/Features/assets/useAssetFormModals";
 import { useScanFormModals } from "@/Features/scans/useScanFormModals";
 import { useScheduleFormModals } from "@/Features/schedule/useScheduleFormModals";
 import { useReportFormModals } from "@/Features/reports/useReportFormModals";
+import { useCreateOrganization } from "@/Features/settings/useSettingMutations";
+import { useMyInvitations } from "@/Features/settings/useSettings";
 import { NAV_LINKS } from "@/Constants/NAV_LINKS";
 
 // ─────────────────────────────────────────────────────────
@@ -202,17 +214,31 @@ function SidebarQuickActions() {
     { label: "Add Asset", icon: Plus, iconColor: "text-blue-500" },
     { label: "Bulk Import", icon: Upload, iconColor: "text-indigo-500" },
     { label: "Start Scan", icon: Play, iconColor: "text-primary" },
-    { label: "New Schedule", icon: CalendarClock, iconColor: "text-emerald-500" },
+    {
+      label: "New Schedule",
+      icon: CalendarClock,
+      iconColor: "text-emerald-500",
+    },
     { label: "Generate Report", icon: FileText, iconColor: "text-amber-500" },
   ];
 
   const handleAction = (label: string) => {
     switch (label) {
-      case "Add Asset": openAddAsset(); break;
-      case "Bulk Import": openBulkCreate(); break;
-      case "Start Scan": openStartScan(); break;
-      case "New Schedule": openNewSchedule(); break;
-      case "Generate Report": openGenerateReport(); break;
+      case "Add Asset":
+        openAddAsset();
+        break;
+      case "Bulk Import":
+        openBulkCreate();
+        break;
+      case "Start Scan":
+        openStartScan();
+        break;
+      case "New Schedule":
+        openNewSchedule();
+        break;
+      case "Generate Report":
+        openGenerateReport();
+        break;
     }
     close();
   };
@@ -249,6 +275,92 @@ function SidebarQuickActions() {
   );
 }
 
+function CreateOrganizationDialog({
+  open,
+  onOpenChange,
+  onCreated,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onCreated: () => void;
+}) {
+  const [name, setName] = useState("");
+  const { mutateAsync: createOrganization, isPending } =
+    useCreateOrganization();
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const cleanName = name.trim();
+    if (!cleanName) return;
+
+    try {
+      await createOrganization({ name: cleanName });
+      setName("");
+      onOpenChange(false);
+      onCreated();
+    } catch {
+      // Mutation toast handles the failure.
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-md overflow-hidden rounded-lg p-0">
+        <form onSubmit={handleSubmit}>
+          <DialogHeader className="border-b border-border px-5 py-4">
+            <DialogTitle>Create Organization</DialogTitle>
+            <DialogDescription>
+              The new organization will become your active organization.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="px-5 py-4">
+            <label
+              htmlFor="organization-name"
+              className="mb-2 block text-xs font-semibold text-foreground"
+            >
+              Organization name
+            </label>
+            <Input
+              id="organization-name"
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              placeholder="Acme Security"
+              className="h-10"
+              maxLength={100}
+              autoFocus
+            />
+          </div>
+
+          <DialogFooter className="px-5 py-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              disabled={isPending}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              className="gap-2"
+              disabled={isPending || name.trim().length < 2}
+            >
+              {isPending ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <Plus className="size-4" />
+              )}
+              Create
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 // ─────────────────────────────────────────────────────────
 // Footer — user profile
 // ─────────────────────────────────────────────────────────
@@ -258,14 +370,39 @@ function SidebarFooter() {
   const { setTheme, theme } = useTheme();
   const router = useRouter();
   const { close, isMobile } = useAppSidebar();
+  const { pendingCount: pendingInvitationCount } = useMyInvitations();
   const [open, setOpen] = useState(false);
+  const [createOpen, setCreateOpen] = useState(false);
 
   const userInitials = user?.name
-    ? user.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
+    ? user.name
+        .split(" ")
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2)
     : "VS";
+
+  const openCreateOrganizationDialog = () => {
+    setOpen(false);
+    requestAnimationFrame(() => setCreateOpen(true));
+  };
+
+  const handleSwitchOrganization = (orgId: string) => {
+    setOpen(false);
+    requestAnimationFrame(() => {
+      switchOrg(orgId);
+      close();
+    });
+  };
 
   return (
     <div className="border-t border-border/50 p-2 shrink-0">
+      <CreateOrganizationDialog
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        onCreated={close}
+      />
       <DropdownMenu open={open} onOpenChange={setOpen} modal={isMobile}>
         <DropdownMenuTrigger asChild>
           <button className="w-full flex items-center gap-3 rounded-xl p-2 transition-colors hover:bg-muted cursor-pointer outline-none">
@@ -295,8 +432,12 @@ function SidebarFooter() {
               {userInitials}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[13px] font-semibold text-foreground truncate">{user?.name ?? "User"}</p>
-              <p className="text-[11px] text-muted-foreground truncate">{user?.email ?? ""}</p>
+              <p className="text-[13px] font-semibold text-foreground truncate">
+                {user?.name ?? "User"}
+              </p>
+              <p className="text-[11px] text-muted-foreground truncate">
+                {user?.email ?? ""}
+              </p>
             </div>
           </div>
 
@@ -307,36 +448,61 @@ function SidebarFooter() {
             <ArrowRightLeft className="size-3" /> Switch Organization
           </div>
           <ScrollArea className="h-36 my-1">
-            <RadioGroup value={activeOrgId} onValueChange={switchOrg}>
+            <div className="space-y-0.5">
               {(organizations ?? []).map((org) => (
                 <DropdownMenuItem
                   key={org.id}
                   className="p-0 focus:bg-transparent"
-                  onSelect={(e) => {
-                    e.preventDefault();
-                    switchOrg(org.id);
-                    setTimeout(() => close(), 100);
-                  }}
+                  onClick={() => handleSwitchOrganization(org.id)}
                 >
-                  <label
-                    htmlFor={`org-${org.id}`}
-                    className="flex w-full items-center gap-3 rounded-lg px-2 py-2 cursor-pointer hover:bg-muted transition-colors"
-                  >
+                  <div className="flex w-full items-center gap-3 rounded-lg px-2 py-2 cursor-pointer hover:bg-muted transition-colors">
                     <div className="flex size-7 items-center justify-center rounded-lg bg-muted text-[10px] font-bold text-primary border border-border">
                       {org.name[0].toUpperCase()}
                     </div>
                     <div className="flex-1 overflow-hidden">
-                      <p className="truncate text-xs font-semibold text-foreground">{org.name}</p>
-                      <p className="truncate text-[10px] text-muted-foreground">{org.role}</p>
+                      <p className="truncate text-xs font-semibold text-foreground">
+                        {org.name}
+                      </p>
+                      <p className="truncate text-[10px] text-muted-foreground">
+                        {org.role}
+                      </p>
                     </div>
                     {activeOrgId === org.id && (
                       <Check className="size-3.5 text-primary shrink-0" />
                     )}
-                  </label>
+                  </div>
                 </DropdownMenuItem>
               ))}
-            </RadioGroup>
+            </div>
           </ScrollArea>
+
+          <DropdownMenuSeparator className="my-1" />
+
+          <DropdownMenuItem
+            className="gap-2 text-xs rounded-lg px-2 py-2 text-muted-foreground hover:text-foreground cursor-pointer"
+            onClick={() => {
+              router.push("/invitations");
+              setOpen(false);
+              close();
+            }}
+          >
+            <MailPlus className="size-3.5" />
+            <span className="flex-1">Invitations</span>
+            {pendingInvitationCount > 0 && (
+              <span className="rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-bold text-primary-foreground">
+                {pendingInvitationCount}
+              </span>
+            )}
+          </DropdownMenuItem>
+
+          <DropdownMenuSeparator className="my-1" />
+
+          <DropdownMenuItem
+            className="gap-2 text-xs rounded-lg px-2 py-2 text-muted-foreground hover:text-foreground cursor-pointer"
+            onClick={openCreateOrganizationDialog}
+          >
+            <Plus className="size-3.5" /> Create Organization
+          </DropdownMenuItem>
 
           <DropdownMenuSeparator className="my-1" />
 
@@ -347,15 +513,17 @@ function SidebarFooter() {
           <DropdownMenuGroup className="px-1 pb-1">
             {[
               { label: "Light", value: "light", icon: Sun },
-              { label: "Dark",  value: "dark",  icon: Moon },
-              { label: "System",value: "system",icon: Monitor },
+              { label: "Dark", value: "dark", icon: Moon },
+              { label: "System", value: "system", icon: Monitor },
             ].map(({ label, value, icon: Icon }) => (
               <DropdownMenuItem
                 key={value}
                 onClick={() => setTheme(value)}
                 className="flex items-center justify-between text-xs cursor-pointer rounded-lg px-2 py-2 text-muted-foreground hover:text-foreground"
               >
-                <div className="flex items-center gap-2"><Icon className="size-3.5" /> {label}</div>
+                <div className="flex items-center gap-2">
+                  <Icon className="size-3.5" /> {label}
+                </div>
                 {theme === value && <Check className="size-3.5 text-primary" />}
               </DropdownMenuItem>
             ))}
@@ -364,10 +532,24 @@ function SidebarFooter() {
           <DropdownMenuSeparator className="my-1" />
 
           <DropdownMenuGroup className="px-1 py-1">
-            <DropdownMenuItem className="gap-2 text-xs rounded-lg px-2 py-2 text-muted-foreground hover:text-foreground cursor-pointer" onClick={() => { router.push("/notifications"); setOpen(false); close(); }}>
+            <DropdownMenuItem
+              className="gap-2 text-xs rounded-lg px-2 py-2 text-muted-foreground hover:text-foreground cursor-pointer"
+              onClick={() => {
+                router.push("/notifications");
+                setOpen(false);
+                close();
+              }}
+            >
               <Bell className="size-3.5" /> Notifications
             </DropdownMenuItem>
-            <DropdownMenuItem className="gap-2 text-xs rounded-lg px-2 py-2 text-muted-foreground hover:text-foreground cursor-pointer" onClick={() => { router.push("/settings"); setOpen(false); close(); }}>
+            <DropdownMenuItem
+              className="gap-2 text-xs rounded-lg px-2 py-2 text-muted-foreground hover:text-foreground cursor-pointer"
+              onClick={() => {
+                router.push("/settings");
+                setOpen(false);
+                close();
+              }}
+            >
               <Settings className="size-3.5" /> Workspace Settings
             </DropdownMenuItem>
           </DropdownMenuGroup>

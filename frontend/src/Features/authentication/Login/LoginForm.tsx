@@ -106,12 +106,12 @@ function PasswordField() {
     <Field>
       <div className="flex items-center justify-between mb-2">
         <FieldLabel className="text-[13px] font-semibold text-foreground/80 mb-0">Password</FieldLabel>
-        <span 
+        <Link 
+          href="/forgot-password"
           className="text-[11px] font-bold text-primary cursor-pointer hover:text-primary/80 transition-colors uppercase tracking-tight"
-          onClick={() => toast.info("Password reset is not yet available.")}
         >
           Forgot?
-        </span>
+        </Link>
       </div>
       <div className="relative">
         <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60" />

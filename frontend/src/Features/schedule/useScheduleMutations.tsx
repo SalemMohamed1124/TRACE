@@ -9,7 +9,7 @@ import {
   createSchedule,
   updateSchedule,
 } from "@/Services/Schedules";
-import type { ScanSchedule } from "@/types";
+import type { UpdateSchedulePayload } from "@/types";
 
 export function useCreateSchedule() {
   const queryClient = useQueryClient();
@@ -49,7 +49,7 @@ export function useUpdateSchedule(id?: string) {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<ScanSchedule> }) =>
+    mutationFn: ({ id, data }: { id: string; data: UpdateSchedulePayload }) =>
       updateSchedule(id, data),
     onSuccess: () => {
       toast.success("Schedule updated successfully");

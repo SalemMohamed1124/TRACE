@@ -1,4 +1,16 @@
-import { Controller, Get, Patch, Param, Query, Req } from '@nestjs/common';
+import {
+  Controller,
+  DefaultValuePipe,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Query,
+} from '@nestjs/common';
+import {
+  CurrentUser,
+  type JwtUser,
+} from '../auth/decorators/current-user.decorator.js';
 import { NotificationsService } from './notifications.service.js';
 
 @Controller('notifications')
@@ -7,22 +19,19 @@ export class NotificationsController {
 
   @Get()
   async findAll(
-    @Req() req: any,
-    @Query('limit') limit?: string,
+    @CurrentUser() user: JwtUser,
+    @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number,
   ) {
-    const userId: string = req.user.userId;
-    return this.notificationsService.findAll(userId, limit ? parseInt(limit, 10) : 20);
+    return this.notificationsService.findAll(user.userId, limit);
   }
 
   @Patch('read-all')
-  async markAllAsRead(@Req() req: any) {
-    const userId: string = req.user.userId;
-    return this.notificationsService.markAllAsRead(userId);
+  async markAllAsRead(@CurrentUser() user: JwtUser) {
+    return this.notificationsService.markAllAsRead(user.userId);
   }
 
   @Patch(':id/read')
-  async markAsRead(@Param('id') id: string, @Req() req: any) {
-    const userId: string = req.user.userId;
-    return this.notificationsService.markAsRead(id, userId);
+  async markAsRead(@Param('id') id: string, @CurrentUser() user: JwtUser) {
+    return this.notificationsService.markAsRead(id, user.userId);
   }
 }

@@ -12,7 +12,10 @@ interface UseOrgReturn {
   activeOrg: Organization | undefined;
   activeOrgId: string | undefined;
   activeRole: OrgRole | undefined;
-  switchOrg: (orgId: string) => void;
+  switchOrg: (
+    orgId: string,
+    options?: { redirectToOverview?: boolean },
+  ) => void;
   isAdmin: boolean;
   isEditorOrAbove: boolean;
 }
@@ -26,12 +29,16 @@ export function useOrg(): UseOrgReturn {
   const activeRole = activeOrg?.role;
 
   const switchOrg = useCallback(
-    (orgId: string) => {
+    (orgId: string, options?: { redirectToOverview?: boolean }) => {
       setActiveOrgId(orgId);
       notifyAuthChange();
       // Invalidate all cached data when switching orgs
       queryClient.invalidateQueries();
-      router.push("/overview");
+      if (options?.redirectToOverview ?? true) {
+        router.push("/overview");
+      } else {
+        router.refresh();
+      }
     },
     [queryClient, router],
   );

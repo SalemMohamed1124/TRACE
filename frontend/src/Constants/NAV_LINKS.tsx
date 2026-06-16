@@ -7,6 +7,7 @@ import {
   FileText,
   Bell,
   Settings,
+  MailPlus,
 } from "lucide-react";
 
 export const NAV_LINKS = [
@@ -32,6 +33,7 @@ export const NAV_LINKS = [
   {
     group: "Administration",
     items: [
+      { label: "Invitations", link: "/invitations", icon: MailPlus },
       { label: "Notifications", link: "/notifications", icon: Bell },
       { label: "Workspace Settings", link: "/settings", icon: Settings },
     ],

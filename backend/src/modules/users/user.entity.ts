@@ -24,6 +24,12 @@ export class User {
   @Column({ type: 'varchar', length: 255, name: 'password_hash' })
   passwordHash!: string;
 
+  @Column({ type: 'varchar', length: 255, name: 'password_reset_token', nullable: true })
+  passwordResetToken!: string | null;
+
+  @Column({ type: 'timestamptz', name: 'password_reset_expires', nullable: true })
+  passwordResetExpires!: Date | null;
+
   @CreateDateColumn({ type: 'timestamptz', name: 'created_at' })
   createdAt!: Date;
 

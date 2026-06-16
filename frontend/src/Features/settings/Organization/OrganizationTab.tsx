@@ -3,29 +3,43 @@
 import { useState } from "react";
 import { useOrg } from "@/hooks/useOrg";
 import { useOrgMembers } from "../useSettings";
-import { useUpdateOrganization, useDeleteOrganization } from "../useSettingMutations";
+import {
+  useUpdateOrganization,
+  useDeleteOrganization,
+} from "../useSettingMutations";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Building2, Calendar, Users, AlertTriangle, Trash2, Check, Loader2, Pencil, ShieldAlert } from "lucide-react";
+import {
+  Building2,
+  Calendar,
+  Users,
+  AlertTriangle,
+  Check,
+  Loader2,
+  Pencil,
+} from "lucide-react";
 import { formatDateTime } from "@/lib/utils";
 
 export default function OrganizationTab() {
-  const { activeOrg, activeOrgId } = useOrg();
-  const { mutateAsync: updateOrgApi, isPending: isUpdatingOrg } = useUpdateOrganization();
-  const { mutateAsync: deleteOrgApi, isPending: isDeletingOrg } = useDeleteOrganization();
+  const { activeOrg, activeOrgId, organizations } = useOrg();
+  const { mutateAsync: updateOrgApi, isPending: isUpdatingOrg } =
+    useUpdateOrganization();
+  const { mutateAsync: deleteOrgApi, isPending: isDeletingOrg } =
+    useDeleteOrganization();
   const { items: members = [] } = useOrgMembers(activeOrgId);
-  
+
   const [orgName, setOrgName] = useState(activeOrg?.name ?? "");
   const [isEditing, setIsEditing] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
+  const canDeleteOrganization = organizations.length > 1;
 
   const handleUpdate = async () => {
     if (!activeOrgId) return;
     try {
       await updateOrgApi({ orgId: activeOrgId, name: orgName });
       setIsEditing(false);
-    } catch (error) {
+    } catch {
       // Error handled by mutation toast
     }
   };
@@ -41,35 +55,47 @@ export default function OrganizationTab() {
             </div>
             {isEditing ? (
               <div className="flex items-center gap-2 max-w-sm">
-                <Input 
-                  value={orgName} 
-                  onChange={e => setOrgName(e.target.value)} 
-                  className="h-9 text-sm" 
-                  autoFocus 
+                <Input
+                  value={orgName}
+                  onChange={(e) => setOrgName(e.target.value)}
+                  className="h-9 text-sm"
+                  autoFocus
                 />
-                <Button 
+                <Button
                   size="sm"
-                  onClick={handleUpdate} 
-                  disabled={isUpdatingOrg || !orgName.trim()} 
+                  onClick={handleUpdate}
+                  disabled={isUpdatingOrg || !orgName.trim()}
                 >
-                  {isUpdatingOrg ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+                  {isUpdatingOrg ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Check className="h-4 w-4" />
+                  )}
                 </Button>
-                <Button 
-                  variant="ghost" 
+                <Button
+                  variant="ghost"
                   size="sm"
-                  onClick={() => { setIsEditing(false); setOrgName(activeOrg?.name || ""); }}
+                  onClick={() => {
+                    setIsEditing(false);
+                    setOrgName(activeOrg?.name || "");
+                  }}
                 >
                   Cancel
                 </Button>
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <h2 className="text-lg font-semibold">{activeOrg?.name ?? "Organization"}</h2>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
+                <h2 className="text-lg font-semibold">
+                  {activeOrg?.name ?? "Organization"}
+                </h2>
+                <Button
+                  variant="ghost"
+                  size="icon"
                   className="h-8 w-8"
-                  onClick={() => setIsEditing(true)}
+                  onClick={() => {
+                    setOrgName(activeOrg?.name ?? "");
+                    setIsEditing(true);
+                  }}
                 >
                   <Pencil className="h-3.5 w-3.5" />
                 </Button>
@@ -82,17 +108,23 @@ export default function OrganizationTab() {
           <div className="p-4 bg-muted/30 border border-border/50 flex flex-col gap-1">
             <div className="flex items-center gap-2 mb-1">
               <Users className="size-3.5 text-muted-foreground" />
-              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Members</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                Members
+              </span>
             </div>
             <span className="text-xl font-semibold">{members.length}</span>
           </div>
           <div className="p-4 bg-muted/30 border border-border/50 flex flex-col gap-1">
             <div className="flex items-center gap-2 mb-1">
               <Calendar className="size-3.5 text-muted-foreground" />
-              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Joined</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                Joined
+              </span>
             </div>
             <span className="text-xl font-semibold">
-              {activeOrg?.createdAt ? formatDateTime(activeOrg.createdAt).split(',')[0] : "—"}
+              {activeOrg?.createdAt
+                ? formatDateTime(activeOrg.createdAt).split(",")[0]
+                : "—"}
             </span>
           </div>
         </div>
@@ -102,48 +134,65 @@ export default function OrganizationTab() {
       <div className="border border-destructive/20 bg-destructive/5 overflow-hidden">
         <div className="px-6 py-3 border-b border-destructive/10 flex items-center gap-2 bg-destructive/10">
           <AlertTriangle className="size-4 text-destructive" />
-          <span className="text-xs font-bold uppercase tracking-wider text-destructive">Danger Zone</span>
+          <span className="text-xs font-bold uppercase tracking-wider text-destructive">
+            Danger Zone
+          </span>
         </div>
         <div className="p-6">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div className="flex-1">
-              <p className="text-sm font-semibold text-foreground mb-1">Delete Organization</p>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                This action is irreversible. All assets, scans, and reports will be permanently removed.
+              <p className="text-sm font-semibold text-foreground mb-1">
+                Delete Organization
               </p>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                This action is irreversible. All assets, scans, and reports will
+                be permanently removed.
+              </p>
+              {!canDeleteOrganization && (
+                <p className="mt-2 text-xs text-muted-foreground">
+                  You need at least one organization.
+                </p>
+              )}
             </div>
-            
+
             {!showDeleteConfirm ? (
-              <Button 
-                variant="destructive" 
-                onClick={() => setShowDeleteConfirm(true)} 
+              <Button
+                variant="destructive"
+                onClick={() => setShowDeleteConfirm(true)}
+                disabled={!canDeleteOrganization}
                 className="h-9 px-4 text-xs font-bold"
               >
                 Delete Organization
               </Button>
             ) : (
               <div className="flex flex-col gap-3 min-w-[240px]">
-                <p className="text-[10px] font-bold uppercase text-destructive">Confirm Organization Name</p>
-                <Input 
-                  value={deleteConfirmText} 
-                  onChange={e => setDeleteConfirmText(e.target.value)} 
-                  placeholder={activeOrg?.name} 
+                <p className="text-[10px] font-bold uppercase text-destructive">
+                  Confirm Organization Name
+                </p>
+                <Input
+                  value={deleteConfirmText}
+                  onChange={(e) => setDeleteConfirmText(e.target.value)}
+                  placeholder={activeOrg?.name}
                   className="h-9 text-sm"
                 />
                 <div className="flex items-center gap-2">
-                  <Button 
-                    variant="ghost" 
+                  <Button
+                    variant="ghost"
                     size="sm"
-                    className="flex-1 text-xs" 
+                    className="flex-1 text-xs"
                     onClick={() => setShowDeleteConfirm(false)}
                   >
                     Cancel
                   </Button>
-                  <Button 
-                    variant="destructive" 
+                  <Button
+                    variant="destructive"
                     size="sm"
-                    className="flex-1 text-xs" 
-                    disabled={deleteConfirmText !== activeOrg?.name || isDeletingOrg} 
+                    className="flex-1 text-xs"
+                    disabled={
+                      !canDeleteOrganization ||
+                      deleteConfirmText !== activeOrg?.name ||
+                      isDeletingOrg
+                    }
                     onClick={() => deleteOrgApi(activeOrgId!)}
                   >
                     Confirm Delete

@@ -3,7 +3,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ScanSchedule } from './scan-schedule.entity.js';
 import { Asset } from '../assets/asset.entity.js';
-import { ScanFrequency, ScanType } from '../../common/enums/index.js';
+import { CreateScheduleDto } from './dto/create-schedule.dto.js';
+import { UpdateScheduleDto } from './dto/update-schedule.dto.js';
+import { calculateNextRunAt, createAnchor } from './schedule-next-run.js';
 
 @Injectable()
 export class SchedulesService {
@@ -25,9 +27,8 @@ export class SchedulesService {
   async create(
     orgId: string,
     userId: string,
-    dto: { assetId: string; frequency: ScanFrequency; scanType?: string; scheduledTime?: string },
+    dto: CreateScheduleDto,
   ): Promise<ScanSchedule> {
-    // Verify asset belongs to org
     const asset = await this.assetRepo.findOne({
       where: { id: dto.assetId, orgId },
     });
@@ -36,29 +37,35 @@ export class SchedulesService {
       throw new NotFoundException('Asset not found in this organization');
     }
 
-    const nextRunAt = this.calculateNextRun(dto.frequency);
-
-    // Default to QUICK if not provided or invalid
-    const validScanType = dto.scanType === 'DEEP' ? ScanType.DEEP : ScanType.QUICK;
+    const now = new Date();
+    const anchor = createAnchor(now);
 
     const schedule = this.scheduleRepo.create({
       assetId: dto.assetId,
       orgId,
       createdBy: userId,
       frequency: dto.frequency,
-      scanType: validScanType,
-      timeOfDay: dto.scheduledTime || '02:00',
-      nextRunAt,
+      scanType: dto.scanType,
+      timeOfDay: dto.scheduledTime,
+      dayOfWeek: anchor.dayOfWeek,
+      dayOfMonth: anchor.dayOfMonth,
+      nextRunAt: calculateNextRunAt(
+        dto.frequency,
+        dto.scheduledTime,
+        now,
+        anchor,
+      ),
       isActive: true,
     });
 
-    return this.scheduleRepo.save(schedule);
+    const saved = await this.scheduleRepo.save(schedule);
+    return this.findOne(saved.id, orgId);
   }
 
   async update(
     id: string,
     orgId: string,
-    dto: { isActive?: boolean; frequency?: ScanFrequency },
+    dto: UpdateScheduleDto,
   ): Promise<ScanSchedule> {
     const schedule = await this.scheduleRepo.findOne({
       where: { id, orgId },
@@ -68,16 +75,54 @@ export class SchedulesService {
       throw new NotFoundException('Schedule not found');
     }
 
+    if (dto.assetId && dto.assetId !== schedule.assetId) {
+      const asset = await this.assetRepo.findOne({
+        where: { id: dto.assetId, orgId },
+      });
+
+      if (!asset) {
+        throw new NotFoundException('Asset not found in this organization');
+      }
+
+      schedule.assetId = dto.assetId;
+    }
+
+    const recurrenceChanged =
+      dto.frequency !== undefined ||
+      dto.scheduledTime !== undefined ||
+      dto.isActive !== undefined;
+
+    if (dto.scanType !== undefined) {
+      schedule.scanType = dto.scanType;
+    }
+
+    if (dto.frequency !== undefined) {
+      schedule.frequency = dto.frequency;
+    }
+
+    if (dto.scheduledTime !== undefined) {
+      schedule.timeOfDay = dto.scheduledTime;
+    }
+
     if (dto.isActive !== undefined) {
       schedule.isActive = dto.isActive;
     }
 
-    if (dto.frequency) {
-      schedule.frequency = dto.frequency;
-      schedule.nextRunAt = this.calculateNextRun(dto.frequency);
+    if (recurrenceChanged && schedule.isActive) {
+      const now = new Date();
+      const anchor = createAnchor(now);
+      schedule.dayOfWeek = anchor.dayOfWeek;
+      schedule.dayOfMonth = anchor.dayOfMonth;
+      schedule.nextRunAt = calculateNextRunAt(
+        schedule.frequency,
+        schedule.timeOfDay,
+        now,
+        anchor,
+      );
     }
 
-    return this.scheduleRepo.save(schedule);
+    const saved = await this.scheduleRepo.save(schedule);
+    return this.findOne(saved.id, orgId);
   }
 
   async remove(id: string, orgId: string): Promise<{ success: boolean }> {
@@ -93,25 +138,16 @@ export class SchedulesService {
     return { success: true };
   }
 
-  private calculateNextRun(frequency: ScanFrequency): Date {
-    const now = new Date();
-    const next = new Date(now);
-    next.setHours(2, 0, 0, 0); // Default 2 AM
+  private async findOne(id: string, orgId: string): Promise<ScanSchedule> {
+    const schedule = await this.scheduleRepo.findOne({
+      where: { id, orgId },
+      relations: ['asset'],
+    });
 
-    switch (frequency) {
-      case ScanFrequency.DAILY:
-        if (now.getHours() >= 2) {
-          next.setDate(next.getDate() + 1);
-        }
-        break;
-      case ScanFrequency.WEEKLY:
-        next.setDate(next.getDate() + (7 - now.getDay() + 1) % 7 || 7);
-        break;
-      case ScanFrequency.MONTHLY:
-        next.setMonth(next.getMonth() + 1, 1);
-        break;
+    if (!schedule) {
+      throw new NotFoundException('Schedule not found');
     }
 
-    return next;
+    return schedule;
   }
 }

@@ -29,6 +29,12 @@ export type ScanStatus =
 export type Severity = "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
 export type OrgRole = "ADMIN" | "EDITOR" | "VIEWER";
 export type ReportFormat = "PDF" | "JSON" | "HTML";
+export type NotificationType =
+  | "SCAN_COMPLETE"
+  | "SCAN_FAILED"
+  | "AI_ANALYSIS_READY"
+  | "CRITICAL_VULN"
+  | "ORG_INVITATION";
 
 export interface User {
   id: string;
@@ -61,6 +67,35 @@ export interface OrgMember {
     name: string;
     email: string;
   };
+}
+
+export type OrganizationInvitationStatus =
+  | "PENDING"
+  | "ACCEPTED"
+  | "DECLINED"
+  | "CANCELLED";
+
+export interface OrganizationInvitation {
+  id: string;
+  email: string;
+  role: OrgRole;
+  status: OrganizationInvitationStatus;
+  createdAt: string;
+  updatedAt: string;
+  organization: {
+    id: string;
+    name: string;
+  };
+  invitedUser: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  invitedBy: {
+    id: string;
+    name: string;
+    email: string;
+  } | null;
 }
 
 export interface Asset {
@@ -167,6 +202,7 @@ export interface ScanSchedule {
   id: string;
   assetId: string;
   frequency: "DAILY" | "WEEKLY" | "MONTHLY";
+  timeOfDay: string;
   nextRunAt: string;
   isActive: boolean;
   scanType: ScanType;
@@ -191,11 +227,24 @@ export interface Report {
 export interface Notification {
   id: string;
   userId: string;
-  type: string;
+  type: NotificationType;
   message: string;
   isRead: boolean;
-  metadata: Record<string, unknown>;
+  metadata: NotificationMetadata | null;
   createdAt: string;
+}
+
+export interface NotificationMetadata {
+  organizationId?: string;
+  scanId?: string;
+  assetId?: string;
+  invitationId?: string;
+  projectId?: string;
+  severity?: Severity;
+  findingsCount?: number;
+  criticalCount?: number;
+  riskScore?: number;
+  error?: string;
 }
 
 // ─── Auth Mode ───────────────────────────────────
@@ -217,8 +266,12 @@ export interface CreateSchedulePayload {
   assetId: string;
   scanType: ScanType;
   frequency: "DAILY" | "WEEKLY" | "MONTHLY";
-  nextRunAt: string;
+  scheduledTime: string;
 }
+
+export type UpdateSchedulePayload = Partial<CreateSchedulePayload> & {
+  isActive?: boolean;
+};
 
 export interface ChangePasswordPayload {
   currentPassword: string;
@@ -244,4 +297,3 @@ export type ActivityType =
   | "finding_found"
   | "report_generated"
   | "asset_added";
-

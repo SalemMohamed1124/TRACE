@@ -6,16 +6,21 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import * as bcrypt from 'bcrypt';
-import * as crypto from 'crypto';
+import { ILike, Repository } from 'typeorm';
 import { Organization } from './organization.entity.js';
 import { OrganizationMember } from './organization-member.entity.js';
+import { OrganizationInvitation } from './organization-invitation.entity.js';
 import { User } from '../users/user.entity.js';
-import { UserRole } from '../../common/enums/index.js';
+import {
+  NotificationType,
+  OrganizationInvitationStatus,
+  UserRole,
+} from '../../common/enums/index.js';
 import { CreateOrgDto } from './dto/create-org.dto.js';
 import { AddMemberDto } from './dto/add-member.dto.js';
+import { CreateInvitationDto } from './dto/create-invitation.dto.js';
 import { UpdateMemberRoleDto } from './dto/update-member-role.dto.js';
+import { NotificationsService } from '../notifications/notifications.service.js';
 
 const ROLE_PERMISSIONS: Record<UserRole, string[]> = {
   [UserRole.ADMIN]: ['READ', 'WRITE', 'DELETE', 'MANAGE_USERS', 'MANAGE_SCANS'],
@@ -41,6 +46,29 @@ export interface MemberInfo {
   };
 }
 
+export interface InvitationInfo {
+  id: string;
+  email: string;
+  role: UserRole;
+  status: OrganizationInvitationStatus;
+  createdAt: Date;
+  updatedAt: Date;
+  organization: {
+    id: string;
+    name: string;
+  };
+  invitedUser: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  invitedBy: {
+    id: string;
+    name: string;
+    email: string;
+  } | null;
+}
+
 export interface SwitchOrgResponse {
   organization: {
     id: string;
@@ -57,12 +85,112 @@ export class OrganizationsService {
     private readonly orgRepo: Repository<Organization>,
     @InjectRepository(OrganizationMember)
     private readonly memberRepo: Repository<OrganizationMember>,
+    @InjectRepository(OrganizationInvitation)
+    private readonly invitationRepo: Repository<OrganizationInvitation>,
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
-  async createOrganization(userId: string, dto: CreateOrgDto): Promise<Organization> {
-    const org = this.orgRepo.create({ name: dto.name });
+  private normalizeOrgName(name: string): string {
+    return name.trim().toLowerCase();
+  }
+
+  private cleanOrgName(name: string): string {
+    if (typeof name !== 'string') {
+      throw new BadRequestException('Organization name is required');
+    }
+
+    const cleanName = name.trim();
+    if (!cleanName) {
+      throw new BadRequestException('Organization name is required');
+    }
+    return cleanName;
+  }
+
+  private async assertAdmin(
+    orgId: string,
+    userId: string,
+  ): Promise<OrganizationMember> {
+    const member = await this.memberRepo.findOne({
+      where: { userId, orgId, role: UserRole.ADMIN },
+    });
+
+    if (!member) {
+      throw new ForbiddenException('Only admins can manage this organization');
+    }
+
+    return member;
+  }
+
+  private async assertUniqueOrgNameForUser(
+    userId: string,
+    name: string,
+    excludeOrgId?: string,
+  ): Promise<void> {
+    const normalizedName = this.normalizeOrgName(name);
+    const memberships = await this.memberRepo.find({
+      where: { userId },
+      relations: ['organization'],
+    });
+
+    const duplicate = memberships.find(
+      (member) =>
+        member.orgId !== excludeOrgId &&
+        this.normalizeOrgName(member.organization.name) === normalizedName,
+    );
+
+    if (duplicate) {
+      throw new ConflictException(
+        'You already have an organization with this name',
+      );
+    }
+  }
+
+  private toOrgWithRole(org: Organization, role: UserRole): OrgWithRole {
+    return {
+      id: org.id,
+      name: org.name,
+      role,
+      createdAt: org.createdAt,
+    };
+  }
+
+  private toInvitationInfo(invitation: OrganizationInvitation): InvitationInfo {
+    return {
+      id: invitation.id,
+      email: invitation.email,
+      role: invitation.role,
+      status: invitation.status,
+      createdAt: invitation.createdAt,
+      updatedAt: invitation.updatedAt,
+      organization: {
+        id: invitation.organization.id,
+        name: invitation.organization.name,
+      },
+      invitedUser: {
+        id: invitation.invitedUser.id,
+        name: invitation.invitedUser.name,
+        email: invitation.invitedUser.email,
+      },
+      invitedBy: invitation.invitedBy
+        ? {
+            id: invitation.invitedBy.id,
+            name: invitation.invitedBy.name,
+            email: invitation.invitedBy.email,
+          }
+        : null,
+    };
+  }
+
+  async createOrganization(
+    userId: string,
+    dto: CreateOrgDto,
+  ): Promise<OrgWithRole> {
+    const name = this.cleanOrgName(dto.name);
+    await this.assertUniqueOrgNameForUser(userId, name);
+
+    const org = this.orgRepo.create({ name });
     const savedOrg = await this.orgRepo.save(org);
 
     const member = this.memberRepo.create({
@@ -72,7 +200,7 @@ export class OrganizationsService {
     });
     await this.memberRepo.save(member);
 
-    return savedOrg;
+    return this.toOrgWithRole(savedOrg, UserRole.ADMIN);
   }
 
   async getUserOrganizations(userId: string): Promise<OrgWithRole[]> {
@@ -90,7 +218,10 @@ export class OrganizationsService {
     }));
   }
 
-  async switchOrganization(userId: string, orgId: string): Promise<SwitchOrgResponse> {
+  async switchOrganization(
+    userId: string,
+    orgId: string,
+  ): Promise<SwitchOrgResponse> {
     const member = await this.memberRepo.findOne({
       where: { userId, orgId },
       relations: ['organization'],
@@ -110,13 +241,22 @@ export class OrganizationsService {
     };
   }
 
-  async updateOrganization(orgId: string, name: string): Promise<Organization> {
+  async updateOrganization(
+    orgId: string,
+    userId: string,
+    name: string,
+  ): Promise<OrgWithRole> {
+    const cleanName = this.cleanOrgName(name);
+    const member = await this.assertAdmin(orgId, userId);
+    await this.assertUniqueOrgNameForUser(userId, cleanName, orgId);
+
     const org = await this.orgRepo.findOne({ where: { id: orgId } });
     if (!org) {
       throw new NotFoundException('Organization not found');
     }
-    org.name = name;
-    return this.orgRepo.save(org);
+    org.name = cleanName;
+    const savedOrg = await this.orgRepo.save(org);
+    return this.toOrgWithRole(savedOrg, member.role);
   }
 
   async deleteOrganization(orgId: string, userId: string): Promise<void> {
@@ -125,19 +265,20 @@ export class OrganizationsService {
       throw new NotFoundException('Organization not found');
     }
 
-    // Verify user is admin
-    const member = await this.memberRepo.findOne({
-      where: { userId, orgId, role: UserRole.ADMIN },
-    });
-    if (!member) {
-      throw new ForbiddenException('Only admins can delete organizations');
+    await this.assertAdmin(orgId, userId);
+
+    const orgCount = await this.memberRepo.count({ where: { userId } });
+    if (orgCount <= 1) {
+      throw new BadRequestException('Cannot delete your last organization');
     }
 
     // CASCADE will clean up members, assets, scans, etc.
     await this.orgRepo.remove(org);
   }
 
-  async getMembers(orgId: string): Promise<MemberInfo[]> {
+  async getMembers(orgId: string, userId: string): Promise<MemberInfo[]> {
+    await this.assertAdmin(orgId, userId);
+
     const members = await this.memberRepo.find({
       where: { orgId },
       relations: ['user'],
@@ -156,63 +297,201 @@ export class OrganizationsService {
     }));
   }
 
-  async addMember(orgId: string, dto: AddMemberDto): Promise<MemberInfo> {
-    // Check if org exists
+  async createInvitation(
+    orgId: string,
+    userId: string,
+    dto: CreateInvitationDto | AddMemberDto,
+  ): Promise<InvitationInfo> {
+    await this.assertAdmin(orgId, userId);
+
     const org = await this.orgRepo.findOne({ where: { id: orgId } });
     if (!org) {
       throw new NotFoundException('Organization not found');
     }
 
-    // Find or create user
-    let user = await this.userRepo.findOne({ where: { email: dto.email } });
-
+    const email = dto.email.trim().toLowerCase();
+    const user = await this.userRepo.findOne({
+      where: { email: ILike(email) },
+    });
     if (!user) {
-      // Create stub user with temp password
-      const tempPassword = crypto.randomBytes(16).toString('hex');
-      const passwordHash = await bcrypt.hash(tempPassword, 12);
-      const nameFromEmail = dto.email.split('@')[0] ?? dto.email;
-
-      user = this.userRepo.create({
-        name: nameFromEmail,
-        email: dto.email,
-        passwordHash,
-      });
-      user = await this.userRepo.save(user);
+      throw new NotFoundException('User with this email was not found');
     }
 
-    // Check if already a member
     const existingMember = await this.memberRepo.findOne({
       where: { userId: user.id, orgId },
     });
-
     if (existingMember) {
-      throw new ConflictException('User is already a member of this organization');
+      throw new ConflictException(
+        'User is already a member of this organization',
+      );
     }
 
-    const member = this.memberRepo.create({
-      userId: user.id,
+    const existingInvitation = await this.invitationRepo.findOne({
+      where: {
+        invitedUserId: user.id,
+        orgId,
+        status: OrganizationInvitationStatus.PENDING,
+      },
+      relations: ['organization', 'invitedUser', 'invitedBy'],
+    });
+
+    if (existingInvitation) {
+      return this.toInvitationInfo(existingInvitation);
+    }
+
+    const invitation = this.invitationRepo.create({
+      email: user.email,
+      invitedUserId: user.id,
+      invitedByUserId: userId,
       orgId,
       role: dto.role,
+      status: OrganizationInvitationStatus.PENDING,
     });
-    const savedMember = await this.memberRepo.save(member);
+    const savedInvitation = await this.invitationRepo.save(invitation);
 
-    return {
-      id: savedMember.id,
-      role: savedMember.role,
-      joinedAt: savedMember.joinedAt,
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
+    await this.notificationsService.createForUser({
+      userId: user.id,
+      type: NotificationType.ORG_INVITATION,
+      message: `You were invited to join ${org.name}.`,
+      metadata: { organizationId: org.id, invitationId: savedInvitation.id },
+    });
+
+    const fullInvitation = await this.invitationRepo.findOneOrFail({
+      where: { id: savedInvitation.id },
+      relations: ['organization', 'invitedUser', 'invitedBy'],
+    });
+
+    return this.toInvitationInfo(fullInvitation);
+  }
+
+  async addMember(
+    orgId: string,
+    userId: string,
+    dto: AddMemberDto,
+  ): Promise<InvitationInfo> {
+    return this.createInvitation(orgId, userId, dto);
+  }
+
+  async getOrganizationInvitations(
+    orgId: string,
+    userId: string,
+  ): Promise<InvitationInfo[]> {
+    await this.assertAdmin(orgId, userId);
+
+    const invitations = await this.invitationRepo.find({
+      where: { orgId, status: OrganizationInvitationStatus.PENDING },
+      relations: ['organization', 'invitedUser', 'invitedBy'],
+      order: { createdAt: 'DESC' },
+    });
+
+    return invitations.map((invitation) => this.toInvitationInfo(invitation));
+  }
+
+  async getMyInvitations(userId: string): Promise<InvitationInfo[]> {
+    const invitations = await this.invitationRepo.find({
+      where: {
+        invitedUserId: userId,
+        status: OrganizationInvitationStatus.PENDING,
       },
-    };
+      relations: ['organization', 'invitedUser', 'invitedBy'],
+      order: { createdAt: 'DESC' },
+    });
+
+    return invitations.map((invitation) => this.toInvitationInfo(invitation));
+  }
+
+  async cancelInvitation(
+    orgId: string,
+    userId: string,
+    invitationId: string,
+  ): Promise<{ success: boolean }> {
+    await this.assertAdmin(orgId, userId);
+
+    const invitation = await this.invitationRepo.findOne({
+      where: {
+        id: invitationId,
+        orgId,
+        status: OrganizationInvitationStatus.PENDING,
+      },
+    });
+
+    if (!invitation) {
+      throw new NotFoundException('Invitation not found');
+    }
+
+    invitation.status = OrganizationInvitationStatus.CANCELLED;
+    await this.invitationRepo.save(invitation);
+    return { success: true };
+  }
+
+  async acceptInvitation(
+    invitationId: string,
+    userId: string,
+  ): Promise<OrgWithRole> {
+    const invitation = await this.invitationRepo.findOne({
+      where: {
+        id: invitationId,
+        invitedUserId: userId,
+        status: OrganizationInvitationStatus.PENDING,
+      },
+      relations: ['organization'],
+    });
+
+    if (!invitation) {
+      throw new NotFoundException('Invitation not found');
+    }
+
+    const existingMember = await this.memberRepo.findOne({
+      where: { userId, orgId: invitation.orgId },
+    });
+
+    let acceptedRole = invitation.role;
+    if (!existingMember) {
+      const member = this.memberRepo.create({
+        userId,
+        orgId: invitation.orgId,
+        role: invitation.role,
+      });
+      await this.memberRepo.save(member);
+    } else {
+      acceptedRole = existingMember.role;
+    }
+
+    invitation.status = OrganizationInvitationStatus.ACCEPTED;
+    await this.invitationRepo.save(invitation);
+
+    return this.toOrgWithRole(invitation.organization, acceptedRole);
+  }
+
+  async declineInvitation(
+    invitationId: string,
+    userId: string,
+  ): Promise<{ success: boolean }> {
+    const invitation = await this.invitationRepo.findOne({
+      where: {
+        id: invitationId,
+        invitedUserId: userId,
+        status: OrganizationInvitationStatus.PENDING,
+      },
+    });
+
+    if (!invitation) {
+      throw new NotFoundException('Invitation not found');
+    }
+
+    invitation.status = OrganizationInvitationStatus.DECLINED;
+    await this.invitationRepo.save(invitation);
+    return { success: true };
   }
 
   async updateMemberRole(
     orgId: string,
+    userId: string,
     memberId: string,
     dto: UpdateMemberRoleDto,
   ): Promise<MemberInfo> {
+    await this.assertAdmin(orgId, userId);
+
     const member = await this.memberRepo.findOne({
       where: { id: memberId, orgId },
       relations: ['user'],
@@ -229,7 +508,9 @@ export class OrganizationsService {
       });
 
       if (adminCount <= 1) {
-        throw new BadRequestException('Cannot demote the last admin of the organization');
+        throw new BadRequestException(
+          'Cannot demote the last admin of the organization',
+        );
       }
     }
 
@@ -248,7 +529,13 @@ export class OrganizationsService {
     };
   }
 
-  async removeMember(orgId: string, memberId: string): Promise<{ success: boolean }> {
+  async removeMember(
+    orgId: string,
+    userId: string,
+    memberId: string,
+  ): Promise<{ success: boolean }> {
+    await this.assertAdmin(orgId, userId);
+
     const member = await this.memberRepo.findOne({
       where: { id: memberId, orgId },
     });
@@ -264,7 +551,9 @@ export class OrganizationsService {
       });
 
       if (adminCount <= 1) {
-        throw new BadRequestException('Cannot remove the last admin of the organization');
+        throw new BadRequestException(
+          'Cannot remove the last admin of the organization',
+        );
       }
     }
 

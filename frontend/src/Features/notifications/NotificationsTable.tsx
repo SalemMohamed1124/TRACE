@@ -1,27 +1,21 @@
 "use client";
 
 import { useNotifications } from "./useNotifications";
-import { useMarkAsRead, useMarkAllAsRead } from "./useNotificationMutations";
+import { useMarkAllAsRead } from "./useNotificationMutations";
 import { NotificationColumns } from "./NotificationColumns";
 import { DataTable } from "@/components/dataTable/DataTable";
 import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { Spinner } from "@/components/ui/spinner";
 import type { Notification } from "@/types";
+import { useNotificationNavigation } from "./useNotificationNavigation";
 
 export default function NotificationsTable() {
-  const router = useRouter();
   const { items: notifications, isPending, error, isError } = useNotifications();
-  const { mutate: markReadApi } = useMarkAsRead();
+  const openNotification = useNotificationNavigation();
 
   function handleRowClick(notification: Notification) {
-    if (!notification.isRead) {
-      markReadApi(notification.id);
-    }
-
-    const scanId = notification.metadata?.scanId;
-    if (scanId) router.push(`/scans/${scanId}`);
+    void openNotification(notification);
   }
 
   return (

@@ -25,6 +25,9 @@ export class ScanSchedule {
   @Column({ type: 'integer', name: 'day_of_week', nullable: true })
   dayOfWeek!: number | null;
 
+  @Column({ type: 'integer', name: 'day_of_month', nullable: true })
+  dayOfMonth!: number | null;
+
   @Column({ type: 'varchar', length: 5, name: 'time_of_day' })
   timeOfDay!: string;
 
