@@ -56,7 +56,7 @@ export function DataTableToolbar<TData>({
         <div className="flex flex-col gap-2 w-full">
           <div className="flex flex-col gap-2 w-full ">
             {extraActions && extraActions}
-            <div className="grid grid-cols-2 gap-2 w-full">
+            <div className={`grid gap-2 w-full ${showExport ? "grid-cols-2" : "grid-cols-1"}`}>
               {showExport && (
                 <TableExporter table={table} fileName={tableName} />
               )}

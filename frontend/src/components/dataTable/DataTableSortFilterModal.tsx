@@ -42,7 +42,7 @@ export default function DataTableSortFilterModal<TData>({
         <Button
           variant="outline"
           size="sm"
-          className="h-9 px-3 transition-none"
+          className="h-9 px-3 transition-none w-full"
         >
           <Funnel className="mr-2 size-4 opacity-50" /> Sort & Filter
         </Button>
